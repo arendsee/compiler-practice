@@ -1,0 +1,6 @@
+Run like so:
+
+```
+make
+./adder < test.txt
+```
