@@ -1,0 +1,17 @@
+%{
+    #include "nest.tab.h"
+%}
+
+%option header-file="lex.yy.h"
+%option noyywrap
+
+num [1-9][0-9]*
+name [a-zA-Z]+
+ws  [ \n\t\r]
+
+%%
+
+{ws}    { }
+{num}   { yylval = strdup(yytext); return NUM;  }
+{name}  { yylval = strdup(yytext); return NAME; }
+.       { return yytext[0]; }

@@ -1,0 +1,14 @@
+# Description
+
+Parse a space separated list of numbers, possibly deeply nested within parentheses.
+
+# Details
+
+I am focused on parsing, not on representing or operating on the data. 
+
+# Run
+
+```
+make
+./nest.out < test.txt
+```
