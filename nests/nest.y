@@ -1,18 +1,13 @@
-%code top{
+%{
 #include <stdio.h>
 #include "lex.yy.h"
-}
+%}
 
 %code requires {
 #include "node.h"
 }
 
-%union
-{
-  Node* exp;
-  char* NAME;
-  int NUM;
-};
+%define api.value.type union
 
 %token <char*> NAME
 %token <int> NUM
@@ -23,7 +18,7 @@
 
 input
   : %empty
-  | input NAME '=' exp { print_tree($4); free($4); printf("-------\n"); }
+  | input NAME '=' exp { print_node($4); free($4); printf("-------\n"); }
 ;
 
 /* this is a STUB, it ignores groups, thus flattening the tree */
@@ -31,9 +26,9 @@ exp
   : NUM     { $$ = new_node(); $$->value = $1; }
   | '('     { $$ = NULL; }
   | exp NUM { if($1){
-                $$->rhs = new_node();
-                $$->rhs->parent = $$;
-                $$ = $$->rhs;
+                $$->next = new_node();
+                $$->next->prev = $$;
+                $$ = $$->next;
               } else {
                 $$ = new_node();
               }
@@ -41,6 +36,7 @@ exp
             }
   | exp ')' { $$ = $1; }
   | exp '(' { $$ = $1; }
+;
 
 %%
 

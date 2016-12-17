@@ -4,32 +4,37 @@ Node* new_node(){
     return (Node*)calloc(1, sizeof(Node));
 }
 
-Node* get_root(Node* n){
+Node* rewind_node(Node* n){
     if(n) {
-        while(n->parent) n = n->parent;
+        while(n->prev) n = n->prev;
     }
     return n;
 }
 
-void print_tree_r(Node* n, int depth){
+void print_node_r(Node* n, int depth){
     if(n){
-        printf("%*s %d\n", depth, "-", n->value);  
-        print_tree_r(n->rhs, depth);
-        print_tree_r(n->lhs, depth + 1);
+        if(n->down){
+            print_node_r(n->down, depth + 1);
+        } else {
+            printf("%*s %d\n", depth, "-", n->value);  
+        }
+        print_node_r(n->next, depth);
     }
 }
 
-void print_tree(Node* n){
-    n = get_root(n);
-    print_tree_r(n, 0);
+void print_node(Node* n){
+    n = rewind_node(n);
+    print_node_r(n, 0);
 }
 
 void free_node(Node* n){
     if(n){
-        if(n->rhs)
-            free_node(n->rhs);
-        if(n->lhs)
-            free_node(n->lhs);
+        if(n->next)
+            n->next->prev = NULL;
+            free_node(n->next);
+        if(n->prev)
+            n->prev->next = NULL;
+            free_node(n->prev);
         free(n);
     }
 }
