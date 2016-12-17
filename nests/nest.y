@@ -1,29 +1,46 @@
-%{
-    #include <stdio.h>
-    #include "lex.yy.h"
-    int yylex(void);
-    void yyerror(const char *);
-    char* BUFFER;
-%}
+%code top{
+#include <stdio.h>
+#include "lex.yy.h"
+}
 
-%define api.value.type {char*}
+%code requires {
+#include "node.h"
+}
 
-%token NAME
-%token NUM
+%union
+{
+  Node* exp;
+  char* NAME;
+  int NUM;
+};
+
+%token <char*> NAME
+%token <int> NUM
+
+%type <Node*> exp;
 
 %%
 
 input
   : %empty
-  | input NAME '=' exp { printf("%s = %s\n", $2, BUFFER); }
+  | input NAME '=' exp { print_tree($4); free($4); printf("-------\n"); }
 ;
 
+/* this is a STUB, it ignores groups, thus flattening the tree */
 exp
-  : NUM     { strcpy(BUFFER, $1);  }
-  | '('     { strcpy(BUFFER, "["); }
-  | exp NUM { strcpy(BUFFER + strlen(BUFFER), $2); }
-  | exp ')' { strcpy(BUFFER + strlen(BUFFER), "]"); }
-  | exp '(' { strcpy(BUFFER + strlen(BUFFER), "["); }
+  : NUM     { $$ = new_node(); $$->value = $1; }
+  | '('     { $$ = NULL; }
+  | exp NUM { if($1){
+                $$->rhs = new_node();
+                $$->rhs->parent = $$;
+                $$ = $$->rhs;
+              } else {
+                $$ = new_node();
+              }
+              $$->value = $2;
+            }
+  | exp ')' { $$ = $1; }
+  | exp '(' { $$ = $1; }
 
 %%
 
@@ -32,7 +49,5 @@ void yyerror(char const *s){
 }
 
 int main(void){
-    BUFFER = (char*)calloc(1024, sizeof(char));
     return yyparse();
-    free(BUFFER);
 }

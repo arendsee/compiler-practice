@@ -12,6 +12,6 @@ ws  [ \n\t\r]
 %%
 
 {ws}    { }
-{num}   { yylval = strdup(yytext); return NUM;  }
-{name}  { yylval = strdup(yytext); return NAME; }
+{num}   { scanf("%d", &yylval.NUM); return NUM;  }
+{name}  { yylval.NAME = strdup(yytext); return NAME; }
 .       { return yytext[0]; }

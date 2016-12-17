@@ -18,7 +18,7 @@ ${C_LEXER}: ${SRC_LEXER} ${H_PARSER}
 	flex ${SRC_LEXER}
 
 ${TARGET}: ${C_LEXER} ${C_PARSER} ${H_PARSER}
-	${CC} -o ${TARGET}.out ${C_PARSER} ${C_LEXER}
+	${CC} -o ${TARGET}.out node.c ${C_PARSER} ${C_LEXER}
 
 clean:
 	rm -f ${TARGET}.out ${C_PARSER} ${H_PARSER} ${C_LEXER} ${H_LEXER}
