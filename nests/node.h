@@ -8,9 +8,10 @@ int yylex(void);
 void yyerror(const char *);
 
 typedef struct Node{
-    struct Node* prev;
-    struct Node* down;
-    struct Node* next;
+    struct Node* l;
+    struct Node* r;
+    struct Node* u;
+    struct Node* d;
     int value; 
 } Node;
 

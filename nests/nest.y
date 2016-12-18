@@ -18,24 +18,32 @@
 
 input
   : %empty
-  | input NAME '=' exp { print_node($4); free($4); printf("-------\n"); }
+  | input NAME '=' exp { print_node($4); free_node($4); printf("-------\n"); }
 ;
 
-/* this is a STUB, it ignores groups, thus flattening the tree */
 exp
-  : NUM     { $$ = new_node(); $$->value = $1; }
-  | '('     { $$ = NULL; }
-  | exp NUM { if($1){
-                $$->next = new_node();
-                $$->next->prev = $$;
-                $$ = $$->next;
-              } else {
-                $$ = new_node();
-              }
-              $$->value = $2;
-            }
-  | exp ')' { $$ = $1; }
-  | exp '(' { $$ = $1; }
+  : NUM             {
+                      $$ = new_node();
+                      $$->value = $1;
+                    }
+  | '(' exp ')'     {
+                      $$ = new_node(); 
+                      $$->d = $2;
+                      $$->d->u = $$;
+                    }
+  | exp NUM         {
+                      $$->r = new_node();
+                      $$->r->l = $$;
+                      $$->r->value = $2;
+                      $$ = $$->r;
+                    }
+  | exp '(' exp ')' {
+                      $1->r = new_node();
+                      $1->r->l = $1;
+                      $1->r->d = $3;
+                      $1->r->d->u = $1->r;
+                      $$ = $1->r;
+                    }
 ;
 
 %%
