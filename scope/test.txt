@@ -1,0 +1,19 @@
+x = 0
+
+scope A {
+    x = 1
+    y = 42
+    scope B {
+        x = 2
+    }
+}
+
+scope C {
+    x = 4
+}
+
+say x  # o
+
+say y  # "Variable 'y' is not in scope"
+
+say x + A.x + A.B.x + C.x  # 7
