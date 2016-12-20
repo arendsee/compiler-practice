@@ -12,8 +12,10 @@ scope C {
     x = 4
 }
 
-say x  # o
+say x  # 0
 
 say y  # "Variable 'y' is not in scope"
+
+say B.x # "Namespace 'B' is not in scope"
 
 say x + A.x + A.B.x + C.x  # 7
