@@ -1,8 +1,11 @@
 %{
     #include <stdio.h>
     #include "lex.yy.h"
+    #include "table.h"
     int yylex(void);
     void yyerror(const char *);
+
+    Scope* current_scope;
 %}
 
 %define api.value.type union
@@ -10,9 +13,12 @@
 %token <int>   INTEGER
 %token <char*> VARIABLE
 %token <char*> IDENTIFIER
+%token <char*> NAMESPACE
+%token SCOPE SAY
 
 %type <int> expression
-%type <int> variable
+%type <char*> variable
+%type <Path*> namespace
 
 %left '+'
 %right '.'
@@ -21,19 +27,35 @@
 %%
 
 statement
-  : IDENTIFIER '=' INT
-  | SAY expresion 
-  | SCOPE IDENTIFIER '{' statement '}'
+  : %empty { current_scope = new_Scope(NULL); }
+  | statement IDENTIFIER '=' INTEGER
+  | statement SAY expression 
+  | statement SCOPE IDENTIFIER '{' statement '}'
   | statement statement
 
 expression
-  : variable  '+' variable  { $$ = $1 + $3; }
-  | expresion '+' variable  { $$ = $1 + $3; }
+  : VARIABLE {
+        $$ = lookup($1, current_scope);
+        if($$){
+            $$ = $$->value->integer;
+        } else {
+            fprintf(stderr, "Could find '%s' in current scope\n", $1);
+        }
+    }
+  | namespace '.' VARIABLE {
+        Scope* scope = lookup_scope($1, current_scope);
+        $$ = loopup($3, scope)
+        if($$){
+            $$ = $$->value->integer;
+        } else {
+            fprintf(stderr, "Could find '%s' in specified scope\n", $3);
+        }
+    }
+  | expression '+' expression { $$ = $1 + $3; }
 
-variable
-  : VARIABLE               { $$ = $1; }
-  | NAMESPACE '.' variable { $$ = $3; }
-  | variable  '.' variable { $$ = $3; }
+namespace
+  : NAMESPACE { $$ = new_Path($1); }
+  | namespace '.' namespace { $$ = new_Path($1); $$->next = $2; }
 
 %%
 
