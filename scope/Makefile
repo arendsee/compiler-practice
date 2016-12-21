@@ -1,5 +1,6 @@
 TARGET=scope
 CC=gcc
+XXFLAGS=-Wall
 
 SRC_BISON=${TARGET}.y
 SRC_LEXER=${TARGET}.l
@@ -9,16 +10,13 @@ H_LEXER=lex.yy.h
 C_PARSER=${TARGET}.tab.c
 H_PARSER=${TARGET}.tab.h
 
-all: ${TARGET}
+FILES=${C_PARSER} ${C_LEXER} table.c
 
-${C_PARSER} ${H_PARSER}: ${SRC_BISON}
+all:
 	bison -d ${SRC_BISON}
-
-${C_LEXER}: ${SRC_LEXER} ${H_PARSER}
 	flex ${SRC_LEXER}
-
-${TARGET}: ${C_LEXER} ${C_PARSER} ${H_PARSER}
-	${CC} -o ${TARGET}.out ${C_PARSER} ${C_LEXER}
+	${CC} ${XXFLAGS} -o ${TARGET}.out ${FILES}
 
 clean:
 	rm -f ${TARGET}.out ${C_PARSER} ${H_PARSER} ${C_LEXER} ${H_LEXER}
+	rm -f tok.log

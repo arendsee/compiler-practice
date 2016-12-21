@@ -2,4 +2,5 @@ lex.yy.*
 *.tab.*
 *.out
 *.output
+tok.log
 tags

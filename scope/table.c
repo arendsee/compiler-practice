@@ -18,11 +18,11 @@ void add_item(Scope* scope, char* name, void* value, Type type){
     t->name = name;
     switch(type){
         case T_VARIABLE:
-            t->value->variable = value;
+            t->value.variable = value;
             break;
         case T_SCOPE:
-            t->value->scope = value;
-            break
+            t->value.scope = value;
+            break;
         default:
             fprintf(stderr, "Invalid type!\n");
     }
@@ -32,11 +32,11 @@ void add_item(Scope* scope, char* name, void* value, Type type){
     scope->table = t;
 }
 
-Scope* lookup_scope(Scope* s, Path* p){
+Scope* lookup_scope(Path* p, Scope* s){
     Scope* result = NULL;
     for(Table* t = s->table; t; t = t->next){
-        if(strcmp(t->name, p) == 0 && t->type == T_SCOPE){
-            s = t->value->scope;
+        if(strcmp(t->name, p->scope) == 0 && t->type == T_SCOPE){
+            s = t->value.scope;
             p = p->next;
             if(p == NULL){
                 result = s;
@@ -49,7 +49,7 @@ Scope* lookup_scope(Scope* s, Path* p){
     return result;
 }
 
-Table* lookup(char* name, Scope*){
+Table* lookup(char* name, Scope* s){
     Table* result = NULL;
     for(Table* t = s->table; t; t = t->next){
         if(strcmp(t->name, name) == 0){
