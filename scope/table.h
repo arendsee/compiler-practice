@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef enum { T_VARIABLE, T_SCOPE } Type;
+typedef enum { T_INT, T_SCOPE } Type;
 
 typedef struct Scope{
     struct Scope* parent;
@@ -18,7 +18,6 @@ typedef struct Table{
     char* name;
     Type type;
     union {
-        char* variable;
         int integer;
         Scope* scope;
     } value;
@@ -30,8 +29,10 @@ typedef struct Path{
 } Path;
 
 Path* new_Path(char*);
-Scope* new_Scope(Scope* parent);
-void add_item(Scope* scope, char* name, void* value, Type type);
+Table* new_Table(char* name, Type type);
+Scope* new_Scope();
+
+void add_table(Scope* scope, Table* table);
 
 Scope* lookup_scope(Path*, Scope*);
 

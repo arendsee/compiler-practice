@@ -6,33 +6,49 @@ Path* new_Path(char* scope){
     return(p);
 }
 
-Scope* new_Scope(Scope* parent){
+Scope* new_Scope(){
     Scope* s = (Scope*)malloc(sizeof(Scope));
-    s->parent = parent;
+    s->parent = NULL;
     s->table = NULL;
     return s;
 }
 
-void add_item(Scope* scope, char* name, void* value, Type type){
+Table* new_Table(char* name, Type type){
     Table* t = (Table*)malloc(sizeof(Table));
     t->name = name;
     switch(type){
-        case T_VARIABLE:
-            t->value.variable = value;
+        case T_INT:
+            t->type = T_INT;
             break;
         case T_SCOPE:
-            t->value.scope = value;
+            t->type = T_SCOPE;
             break;
         default:
             fprintf(stderr, "Invalid type!\n");
+            exit(EXIT_FAILURE);
     }
-    if(scope->table){
-        t->next = scope->table;
+    return t;
+}
+
+void add_table(Scope* scope, Table* table){
+    if(table){
+        if(scope->table){
+            table->next = scope->table;
+        }
+        scope->table = table;
     }
-    scope->table = t;
 }
 
 Scope* lookup_scope(Path* p, Scope* s){
+    if(!s){
+        fprintf(stderr, "WARNING: scope in table.c::lookup_scope is not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    if(!p){
+        fprintf(stderr, "WARNING: path in table.c::lookup_scope is not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    if(!p || !s) return NULL;
     Scope* result = NULL;
     for(Table* t = s->table; t; t = t->next){
         if(strcmp(t->name, p->scope) == 0 && t->type == T_SCOPE){
@@ -42,7 +58,7 @@ Scope* lookup_scope(Path* p, Scope* s){
                 result = s;
                 break;
             } else {
-                t = s->table;
+                result = lookup_scope(p, s); 
             }
         }
     }
@@ -50,6 +66,10 @@ Scope* lookup_scope(Path* p, Scope* s){
 }
 
 Table* lookup(char* name, Scope* s){
+    if(!s){
+        fprintf(stderr, "WARNING: scope in table.c::lookup is not defined\n");
+        exit(EXIT_FAILURE);
+    }
     Table* result = NULL;
     for(Table* t = s->table; t; t = t->next){
         if(strcmp(t->name, name) == 0){

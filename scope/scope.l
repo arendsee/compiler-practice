@@ -62,7 +62,6 @@ scope { LOG("SCOPE "); return SCOPE; }
 %%
 
 int main(void){
-    current_scope = new_Scope(NULL);
     toklog = fopen("tok.log", "w");
     return yyparse();
     fclose(toklog);

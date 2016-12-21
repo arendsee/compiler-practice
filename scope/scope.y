@@ -22,19 +22,36 @@ Scope* current_scope;
 %type <int> expression
 %type <Path*> namespace
 
+%type <Scope*> input
+%type <Table*> phrase
+
 %left '+'
 %nonassoc '='
 
 %%
 
-statement
-  : phrase 
-  | statement phrase
-  | statement SCOPE VARIABLE '{' statement '}'
+input
+  : phrase {
+        $$ = new_Scope();
+        current_scope = $$;
+        add_table($$, $1);
+    }
+  | input phrase {
+        $$ = $1;
+        current_scope = $$;
+        add_table($$, $2);
+    }
+  | input SCOPE VARIABLE '{' input '}' {
+        $$ = $1; 
+        current_scope = $$;
+        Table* t = new_Table($3, T_SCOPE);
+        t->value.scope = $5;
+        add_table($$, t);
+    }
 
 phrase
-  : IDENTIFIER '=' INTEGER
-  | SAY expression 
+  : IDENTIFIER '=' INTEGER { $$ = new_Table($1, T_INT); $$->value.integer = $3; }
+  | SAY expression { $$ = NULL; printf("> %d\n", $2); }
 
 expression
   : VARIABLE {
@@ -43,6 +60,7 @@ expression
             $$ = t->value.integer;
         } else {
             fprintf(stderr, "Could find '%s' in current scope\n", $1);
+            exit(EXIT_FAILURE);
         }
     }
   | namespace '.' VARIABLE {
@@ -52,6 +70,7 @@ expression
             $$ = t->value.integer;
         } else {
             fprintf(stderr, "Could find '%s' in specified scope\n", $3);
+            exit(EXIT_FAILURE);
         }
     }
   | expression '+' expression { $$ = $1 + $3; }
