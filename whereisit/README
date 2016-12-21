@@ -1,0 +1,3 @@
+A tricky part of using the Flex/Bison workflow is getting all the pieces
+to talk to eachother. In this folder I will map out exactly where each
+section send its info.
