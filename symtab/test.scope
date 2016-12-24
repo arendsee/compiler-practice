@@ -1,0 +1,30 @@
+x = 89
+
+scope A {
+    x = 1
+    y = 42
+    say x
+    scope B {
+        x = 2
+        say x
+    }
+    say x   # 1
+    say y   # 42
+    say B.x # 2
+}
+
+scope C {
+    say x # 89, from global scope
+    x = 4
+    say x # 4, from C
+}
+
+say x  # 89
+
+# say y  # "Variable 'y' is not in scope"
+
+# say B.x # "Namespace 'B' is not in scope"
+
+say x + A.x.r + A.B.x + C.x  # 96
+
+say y
