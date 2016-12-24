@@ -1,0 +1,4 @@
+composition A = h . g . f 
+
+effect h = foo
+effect g = bar

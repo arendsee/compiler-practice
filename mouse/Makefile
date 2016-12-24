@@ -1,19 +1,19 @@
-TARGET=scope
+TARGET=mouse
 CC=gcc
 XXFLAGS=-Wall
 
-SRC_BISON=parser.y
-SRC_LEXER=lexer.l
+SRC_BISON=${TARGET}.y
+SRC_LEXER=${TARGET}.l
 
 C_LEXER=lex.yy.c
 H_LEXER=lex.yy.h
 C_PARSER=${TARGET}.tab.c
 H_PARSER=${TARGET}.tab.h
 
-FILES=${C_PARSER} ${C_LEXER} table.c
+FILES=${C_PARSER} ${C_LEXER}
 
 all:
-	bison -d ${SRC_BISON}
+	bison -d --report=all -Wall ${SRC_BISON}
 	flex ${SRC_LEXER}
 	${CC} ${XXFLAGS} -o ${TARGET}.out ${FILES}
 
