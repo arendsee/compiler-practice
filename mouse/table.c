@@ -1,16 +1,14 @@
 #include "table.h"
 
-Entry* entry_new(char* name, TType type, void* value){
-    Entry* e = (Entry*)calloc(1, sizeof(Entry));
-    return e;
-}
-
 Table* table_new(){
     Table* t = (Table*)calloc(1, sizeof(Table));
     return t;
 }
 
-void table_add(Table* table, Entry* entry){
+Table* table_add(Table* table, Entry* entry){
+    if(!table){
+        table = table_new();
+    }
     if(table->entry){
         Table* newtab = table_new();
         newtab->entry = table->entry;
@@ -19,6 +17,7 @@ void table_add(Table* table, Entry* entry){
     } else {
         table->entry = entry;
     }
+    return table;
 }
 
 Table* table_join(Table* a, Table* b){
@@ -35,7 +34,7 @@ Table* table_get(Table* table, char* name, TType type){
     for(Table* t = table; t; t = t->next){
         Entry* e = t->entry;
         if(strcmp(e->name, name) == 0 && e->type == type){
-            table_add(out, e);
+            out = table_add(out, e);
         }
     }
     return out;
@@ -45,7 +44,7 @@ Table* table_recursive_get(Table* table, char* name, TType type){
     Table* out = table_new();
     for(Table* t = table; t->entry; t = t->next){
         if(strcmp(t->entry->name, name) == 0 && t->entry->type == type){
-            table_add(out, t->entry);
+            out = table_add(out, t->entry);
         }
         if(t->entry->type == T_COMPOSITION){
             out = table_join(out, table_recursive_get(table, name, type)); 
@@ -59,7 +58,7 @@ Table* table_path_get(Table* table, Path* path, TType type){
     for(Table* t = table; t->entry; t = t->next){
         if(path_is_base(path)){
             if(strcmp(t->entry->name, path->name) == 0 && t->entry->type == type){
-                table_add(out, t->entry);
+                out = table_add(out, t->entry);
             }
             if(t->entry->type == T_COMPOSITION){
                 out = table_join(out, table_recursive_get(t->entry->value.composition, path->name, type)); 
@@ -78,7 +77,7 @@ Table* table_get_type(Table* table, TType type){
     for(Table* t = table; t; t = t->next){
         Entry* e = t->entry;
         if(e->type == type)
-            table_add(out, e);
+            out = table_add(out, e);
     }
     return out;
 }

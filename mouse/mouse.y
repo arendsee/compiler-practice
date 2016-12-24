@@ -26,26 +26,23 @@ Table* table;
 %%
 
 input
-    : exp { table = table_new(); table_add(table, $1); }
-    | input exp { table_add(table, $2); }
+    : exp { table = table_add(table, $1); }
+    | input exp { table = table_add(table, $2); }
 
 exp
     : COMPOSITION VARIABLE '=' composition {
-        Entry* e = entry_new($2, T_COMPOSITION, $4);
-        table_add(table, e);
+        $$ = entry_new($2, T_COMPOSITION, $4);
     }
     | EFFECT path '=' VARIABLE {
         Effect* effect = effect_new($2, $4);
-        Entry* e = entry_new(NULL, T_EFFECT, effect); 
-        table_add(table, e);
+        $$ = entry_new(NULL, T_EFFECT, effect); 
     }
 
 composition
     : VARIABLE {
-        $$ = table_new();
         Manifold* m = manifold_new($1);
         Entry* e = entry_new($1, T_MANIFOLD, m);
-        table_add($$, e);
+        $$ = table_add(NULL, e);
     }
     | composition '.' composition { $$ = table_join($1, $3); }
 
