@@ -30,8 +30,35 @@ effect      { LOG("EFFECT "); return EFFECT; }
 
 %%
 
+void print_mil(Table* t){
+    if(t && t->entry){
+        for( ; t; t = t->next){
+            switch(t->entry->type){
+                case T_COMPOSITION:
+                    printf("COMPOSITION\n");
+                    print_mil(t->entry->value.composition);
+                    break;
+                case T_EFFECT:
+                    printf("EFFECT\n");
+                    break;
+                case T_MANIFOLD:
+                    printf("MANIFOLD\n");
+                    break;
+                case T_UNDEFINED:
+                    fprintf(stderr, "UNDEFINED - this shouldn't happen\n");
+                    break;
+                default:
+                    fprintf(stderr, "This really should not happen\n");
+                    break;
+            }
+        }
+    }
+}
+
 int main(void){
     toklog = fopen("tok.log", "w");
-    return yyparse();
+    int status = yyparse();
     fclose(toklog);
+    print_mil(table);
+    return status;
 }

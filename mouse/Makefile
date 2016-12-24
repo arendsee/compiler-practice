@@ -17,7 +17,7 @@ FILES=${C_PARSER} ${C_LEXER} path.c table.c effect.c manifold.c entry.c
 all:
 	bison -d --report=all -Wall ${SRC_BISON}
 	flex ${SRC_LEXER}
-	${CC} ${XXFLAGS} -o ${TARGET}.out ${FILES}
+	${CC} -Wall ${XXFLAGS} -o ${TARGET}.out ${FILES}
 
 clean:
 	rm -f ${TARGET}.out ${C_PARSER} ${H_PARSER} ${C_LEXER} ${H_LEXER}

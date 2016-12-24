@@ -82,6 +82,20 @@ Table* table_get_type(Table* table, TType type){
     return out;
 }
 
+Table* table_recursive_get_type(Table* table, TType type){
+    Table* out = table_new();
+    for(Table* t = table; t->entry; t = t->next){
+        if(t->entry->type == type){
+            out = table_add(out, t->entry);
+        }
+        if(t->entry->type == T_COMPOSITION){
+            out = table_join(out, table_recursive_get_type(table, type)); 
+        }
+    }
+    return out;
+}
+
+
 Table* table_first(Table* table){
     return table;
 }

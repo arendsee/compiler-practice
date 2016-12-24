@@ -19,11 +19,13 @@ Table* table_join(Table* a, Table* b);
 
 Table* table_get(Table* table, char* name, TType type); 
 
-Table* table_recursive_get(Table* table, char* name, TType type); 
-
 Table* table_path_get(Table* table, Path* name, TType type); 
 
+Table* table_recursive_get(Table* table, char* name, TType type); 
+
 Table* table_get_type(Table* table, TType type);
+
+Table* table_recursive_get_type(Table* table, TType type);
 
 Table* table_first(Table* table);
 
