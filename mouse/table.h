@@ -33,7 +33,7 @@ Table* table_new();
 
 void table_add(Table* table, Entry* entry);
 
-void table_append(Table* a, Table* b);
+Table* table_join(Table* a, Table* b);
 
 Table* table_get(Table* table, char* name, TType type); 
 

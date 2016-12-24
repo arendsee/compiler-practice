@@ -12,7 +12,7 @@ typedef struct Path{
 
 Path* path_new();
 
-void path_put(Path* path, char* name);
+Path* path_put(Path* path, char* name);
 
 char* path_pop(Path* path);
 

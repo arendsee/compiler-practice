@@ -21,12 +21,13 @@ void table_add(Table* table, Entry* entry){
     }
 }
 
-void table_append(Table* a, Table* b){
+Table* table_join(Table* a, Table* b){
     if(b && b->entry){
         Table* c = a;
         for(; c->next; c = c->next){ }
         c->next = b;
     }
+    return a;
 }
 
 Table* table_get(Table* table, char* name, TType type){
@@ -47,7 +48,7 @@ Table* table_recursive_get(Table* table, char* name, TType type){
             table_add(out, t->entry);
         }
         if(t->entry->type == T_COMPOSITION){
-            table_append(out, table_recursive_get(table, name, type)); 
+            out = table_join(out, table_recursive_get(table, name, type)); 
         }
     }
     return out;
@@ -61,11 +62,11 @@ Table* table_path_get(Table* table, Path* path, TType type){
                 table_add(out, t->entry);
             }
             if(t->entry->type == T_COMPOSITION){
-                table_append(out, table_recursive_get(t->entry->value.composition, path->name, type)); 
+                out = table_join(out, table_recursive_get(t->entry->value.composition, path->name, type)); 
             }
         } else {
             if(t->entry->name == path->name && t->entry->type == T_COMPOSITION){
-                table_append(out, table_path_get(t->entry->value.composition, path->next, type));
+                out = table_join(out, table_path_get(t->entry->value.composition, path->next, type));
             }
         }
     }

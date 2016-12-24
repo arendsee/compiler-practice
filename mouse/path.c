@@ -8,7 +8,7 @@ Path* path_new(){
 /* Each new element is appended to the end. Since I don't store the last
  * element, I have to look it up in linear time. However, there will usually be
  * few elements in the path, so the simplicity of this approach wins. */
-void path_put(Path* path, char* name){
+Path* path_put(Path* path, char* name){
     if(path->name){
         Path* new = path_new();    
         new->name = name;
@@ -18,6 +18,7 @@ void path_put(Path* path, char* name){
     } else {
         path->name = name;
     }
+    return path;
 }
 
 char* path_pop(Path* path){
