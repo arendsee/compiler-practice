@@ -12,19 +12,39 @@ FILE* toklog;
 %option header-file="lex.yy.h"
 %option noyywrap
 
-var       [a-zA-Z]+
-ws        [ \t\n\r]
-comment   #.*\n
+%x S_PATH
+
+var     [a-zA-Z]+
+path    {var}({ws}*\/{ws}*{var})*
+ws      [ \t\n\r]
+comment #.*\n
 
 %%
 
-{ws} { LOGV("%s", yytext); }
+<INITIAL,S_PATH>{ws} { LOGV("%s", yytext); }
 
 {comment} { }
 
-composition { LOG("COMPOSITION ");  return COMPOSITION; }
-effect      { LOG("EFFECT "); return EFFECT; }
-{var}       { LOGV("VARIABLE:%s ", yytext); yylval.VARIABLE = strdup(yytext); return VARIABLE; }
+composition {
+    LOG("COMPOSITION ");
+    return COMPOSITION;
+}
+effect {
+    BEGIN(S_PATH);
+    LOG("EFFECT ");
+    return EFFECT;
+}
+{var} { 
+    LOGV("VARIABLE:%s ", yytext);
+    yylval.VARIABLE = strdup(yytext);
+    return VARIABLE;
+}
+<S_PATH>{path} {
+    BEGIN(INITIAL);
+    LOGV("PATH:%s ", yytext);
+    yylval.PATH = path_from_str(yytext);
+    return PATH;
+}
 
 .    { LOGV("%c ", yytext[0]); return yytext[0]; }
 
@@ -39,7 +59,10 @@ void print_mil(Table* t){
                     print_mil(t->entry->value.composition);
                     break;
                 case T_EFFECT:
-                    printf("EFFECT\n");
+                    {
+                    Effect* e = t->entry->value.effect;
+                    printf("EFFECT %s %s\n", path_str(e->path), e->function);
+                    }
                     break;
                 case T_MANIFOLD:
                     printf("MANIFOLD\n");

@@ -33,3 +33,45 @@ char* path_pop(Path* path){
 bool path_is_base(Path* path){
     return path->next == NULL;
 }
+
+char* path_str(Path* path){
+    if(!path || !path->name){
+        return NULL;
+    }
+    int n = 0;
+    int length = 0;
+    for(Path* p = path; p; p = p->next){
+        n++;
+        length += strlen(p->name);
+    }
+    length += n - 1;
+    char* s = (char*)calloc(length + 1, sizeof(char));
+    int pos = 0;
+    for(Path* p = path; p; p = p->next){
+        strcpy(s+pos, p->name);
+        pos += strlen(p->name);
+        if(p->next){
+            s[pos] = '/';
+            pos++;
+        }
+    }
+    return s;
+}
+
+Path* path_from_str(char* path_str){
+    char* s = path_str;
+    Path* p = path_new();
+    for(int i = 0; ; i++){
+        if(s[i] == '\0'){
+            p = path_put(p, strdup(s));
+            break;
+        }
+        else if(s[i] == '/'){
+            s[i] = '\0';
+            p = path_put(p, strdup(s));
+            s = s + i + 1;
+            i = 0;
+        }
+    }
+    return p;
+}

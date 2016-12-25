@@ -1,4 +1,5 @@
-composition A = h . g . f 
+composition A = h . g . f
 
 effect h = foo
 effect g = bar
+effect A/g = baz

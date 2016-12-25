@@ -22,3 +22,4 @@ all:
 clean:
 	rm -f ${TARGET}.out ${C_PARSER} ${H_PARSER} ${C_LEXER} ${H_LEXER}
 	rm -f tok.log mouse.output
+	rm -f vgcore*
