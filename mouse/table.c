@@ -13,6 +13,7 @@ Table* table_add(Table* table, Entry* entry){
         Table* newtab = table_new();
         newtab->entry = table->entry;
         table->entry = entry;
+        newtab->next = table->next;
         table->next = newtab;
     } else {
         table->entry = entry;
