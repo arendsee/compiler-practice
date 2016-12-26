@@ -9,6 +9,7 @@
  */
 void mil_couplet(Table* t_top, TType type){
     Table* t_couplet = table_recursive_get_type(t_top, type);
+    t_couplet = table_reverse(t_couplet);
     if(t_couplet){
         for(Table* t = t_couplet; t; t = t->next){
             Table* t_man;
@@ -20,6 +21,7 @@ void mil_couplet(Table* t_top, TType type){
                     fprintf(stderr, "ILLEGAL TYPE\n");
                     exit(EXIT_FAILURE);
             }
+            t_man = table_reverse(t_man);
             for(Table* tt = t_man; tt; tt = tt->next){
                 Manifold* m = tt->entry->value.manifold;
                 switch(type){

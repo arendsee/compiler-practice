@@ -124,6 +124,25 @@ Table* table_recursive_get_type(Table* table, TType type){
     return out;
 }
 
+Table* table_reverse(Table* table){
+    Table* prev = NULL;
+    Table* next = NULL;
+    while(table){
+        next = table->next;
+        table->next = prev;
+        prev = table;
+        if(next){
+            table = next;
+            if(TCMP(table->entry->type, T_COMPOSITION)){
+                table->entry->value.composition = table_reverse(table->entry->value.composition);
+            }
+        } else {
+            break;
+        }
+    }
+    return table;
+}
+
 Table* table_first(Table* table){
     return table;
 }

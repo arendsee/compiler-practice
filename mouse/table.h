@@ -27,6 +27,9 @@ Table* table_get_type(Table* table, TType type);
 
 Table* table_recursive_get_type(Table* table, TType type);
 
+/* Recursively reverse a table */
+Table* table_reverse(Table* table);
+
 Table* table_first(Table* table);
 
 Table* table_next(Table* table);
