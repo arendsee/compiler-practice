@@ -5,7 +5,7 @@
  *  1. Find all couplets of the given type
  *  2. For each couplet:
  *  3.   Find all manifolds in its path
- *  4.   For each manifold print the approrpiate MIL instruction(s)
+ *  4.   For each manifold couple the given element
  */
 void mil_couplet(Table* t_top, TType type){
     Table* t_couplet = table_recursive_get_type(t_top, type);
@@ -26,7 +26,7 @@ void mil_couplet(Table* t_top, TType type){
                 Manifold* m = tt->entry->value.manifold;
                 switch(type){
                     case T_EFFECT:
-                        printf("EFCT m%d %s\n", m->uid, t->entry->value.effect->function);
+                        m->effect = t->entry->value.effect->function;
                         break;
                     default:
                         fprintf(stderr, "ILLEGAL TYPE\n");
@@ -37,40 +37,34 @@ void mil_couplet(Table* t_top, TType type){
     }
 }
 
-/* Some sections of Rat and Mouse have atomic left hand sides, rather than
- * paths. In Mouse, only MANIFOLD is in this group. */
-void mil_pathless(Table* t_top, TType type){
-    Table* t_sec = table_recursive_get_type(t_top, type);
-    if(t_sec){
-        for(Table* t = t_sec; t; t = t->next){
-            switch(type){
-                case T_MANIFOLD:
-                    {
-                    Manifold* m = t->entry->value.manifold;
-                    printf("EMIT m%d\n", m->uid);
-                    printf("FUNC m%d %s\n", m->uid, m->function);
-                    }
-                    break;
-                default:
-                    fprintf(stderr, "ILLEGAL TYPE in mil_pathless\n");
-                    exit(EXIT_FAILURE);
-            }
-        }
-    }
+void print_manifold_mil(Manifold* m){
+    printf("EMIT m%d\n", m->uid);
+    printf("FUNC m%d %s\n", m->uid, m->function);
+    printf("EFCT m%d %s\n", m->uid, m->effect);
 }
 
-void mil_effect(Table* t_top){
+void build_manifolds(Table* t_top){
+    /* add other couplets, e.g. cache */
     mil_couplet(t_top, T_EFFECT);
 }
 
-void mil_emit(Table* t_top){
-    mil_pathless(t_top, T_MANIFOLD);
+void print_prolog(Table* t_top){ }
+
+void print_manifolds(Table* t_top){
+    Table* t_man = table_recursive_get_type(t_top, T_MANIFOLD);
+    for(Table* t = t_man; t; t = t->next){
+        print_manifold_mil(t->entry->value.manifold);
+    }
 }
+
+void print_epilog(Table* t_top){ }
 
 void print_mil(Table* t_top){
     if(t_top && t_top->entry){
-        mil_emit(t_top);
-        mil_effect(t_top);
+        print_prolog(t_top);
+        build_manifolds(t_top);
+        print_manifolds(t_top);
+        print_epilog(t_top);
     } else {
         fprintf(stderr, "The symbol table is empty - nothing to do\n");
     }
