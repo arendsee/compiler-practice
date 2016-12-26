@@ -1,5 +1,16 @@
 #include "table.h"
 
+#define STCMP(s1, s2, t1, t2)      \
+    (                              \
+        (s1) && (s2) && (t1) &&    \
+        strcmp((s1), (s2)) == 0 && \
+        (t1) == (t2)               \
+    )
+
+#define TCMP(t1, t2) ((t1) && (t1) == (t2))
+
+#define SCMP(s1, s2) ((s1) && (s2) && strcmp((s1), (s2)) == 0)
+
 Table* table_new(Entry* entry){
     Table* t = (Table*)malloc(sizeof(Table));
     t->entry = entry;
@@ -39,45 +50,41 @@ Table* table_join(Table* a, Table* b){
     return a;
 }
 
-/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_get(Table* table, char* name, TType type){
-    Table* out = table_new(NULL);
+    Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        Entry* e = t->entry;
-        if(strcmp(e->name, name) == 0 && e->type == type){
-            out = table_add(out, e);
+        if(STCMP(t->entry->name, name, t->entry->type, type)){
+            out = table_add(out, t->entry);
         }
     }
     return out;
 } 
 
-/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_recursive_get(Table* table, char* name, TType type){
-    Table* out = table_new(NULL);
-    for(Table* t = table; t->entry; t = t->next){
-        if(strcmp(t->entry->name, name) == 0 && t->entry->type == type){
+    Table* out = NULL;
+    for(Table* t = table; t; t = t->next){
+        if(STCMP(t->entry->name, name, t->entry->type, type)){
             out = table_add(out, t->entry);
         }
-        if(t->entry->type == T_COMPOSITION){
-            out = table_join(out, table_recursive_get(table, name, type)); 
+        if(TCMP(t->entry->type, T_COMPOSITION)){
+            out = table_join(out, table_recursive_get(t->entry->value.composition, name, type)); 
         }
     }
     return out;
 }
 
-/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_path_get(Table* table, Path* path, TType type){
-    Table* out = table_new(NULL);
-    for(Table* t = table; t->entry; t = t->next){
+    Table* out = NULL;
+    for(Table* t = table; t; t = t->next){
         if(path_is_base(path)){
-            if(strcmp(t->entry->name, path->name) == 0 && t->entry->type == type){
+            if(STCMP(t->entry->name, path->name, t->entry->type, type)){
                 out = table_add(out, t->entry);
             }
-            if(t->entry->type == T_COMPOSITION){
-                out = table_join(out, table_recursive_get(t->entry->value.composition, path->name, type)); 
+            if(TCMP(t->entry->type, T_COMPOSITION)){
+                out = table_join(out, table_recursive_get(t->entry->value.composition, path->name, type));
             }
         } else {
-            if(t->entry->name == path->name && t->entry->type == T_COMPOSITION){
+            if(STCMP(t->entry->name, path->name, t->entry->type, T_COMPOSITION)){
                 out = table_join(out, table_path_get(t->entry->value.composition, path->next, type));
             }
         }
@@ -85,12 +92,11 @@ Table* table_path_get(Table* table, Path* path, TType type){
     return out;
 }
 
-/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_get_type(Table* table, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t; t = t->next){
         Entry* e = t->entry;
-        if(e->type == type)
+        if(TCMP(e->type, type))
             out = table_add(out, e);
     }
     return out;
@@ -99,10 +105,10 @@ Table* table_get_type(Table* table, TType type){
 Table* table_recursive_get_type(Table* table, TType type){
     Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        if(t->entry->type == type){
+        if(TCMP(t->entry->type, type)){
             out = table_add(out, t->entry);
         }
-        if(t->entry->type == T_COMPOSITION){
+        if(TCMP(t->entry->type, T_COMPOSITION)){
             Table* down = table_recursive_get_type(t->entry->value.composition, type);
             out = table_join(out, down);
         }
@@ -117,3 +123,7 @@ Table* table_first(Table* table){
 Table* table_next(Table* table){
     return table->next;
 }
+
+#undef STCMP
+#undef TCMP
+#undef SCMP

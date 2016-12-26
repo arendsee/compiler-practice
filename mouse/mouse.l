@@ -53,9 +53,6 @@ int main(void){
     toklog = fopen("tok.log", "w");
     int status = yyparse();
     fclose(toklog);
-    printf(" --- TABLE ---\n");
-    print_table(table);
-    printf(" --- MIL ---\n");
     print_mil(table);
     return status;
 }

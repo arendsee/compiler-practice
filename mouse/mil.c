@@ -1,43 +1,74 @@
 #include "mil.h"
 
-void print_table(Table* t){
-    if(t && t->entry){
-        for( ; t; t = t->next){
-            switch(t->entry->type){
-                case T_COMPOSITION:
-                    printf("COMPOSITION\n");
-                    print_table(t->entry->value.composition);
-                    break;
+/* Mouse has only one couplet type: EFFECT. Rat has a bunch. So the switch
+ * statements will be more populous. This function does the following: 
+ *  1. Find all couplets of the given type
+ *  2. For each couplet:
+ *  3.   Find all manifolds in its path
+ *  4.   For each manifold print the approrpiate MIL instruction(s)
+ */
+void mil_couplet(Table* t_top, TType type){
+    Table* t_couplet = table_recursive_get_type(t_top, type);
+    if(t_couplet){
+        for(Table* t = t_couplet; t; t = t->next){
+            Table* t_man;
+            switch(type){
                 case T_EFFECT:
-                    {
-                    Effect* e = t->entry->value.effect;
-                    printf("EFFECT %s %s\n", path_str(e->path), e->function);
-                    }
-                    break;
-                case T_MANIFOLD:
-                    printf("MANIFOLD %s %d\n", t->entry->name,  t->entry->value.manifold->uid);
-                    break;
-                case T_UNDEFINED:
-                    fprintf(stderr, "UNDEFINED - this shouldn't happen\n");
+                    t_man = table_path_get(t_top, t->entry->value.effect->path, T_MANIFOLD);
                     break;
                 default:
-                    fprintf(stderr, "This really should not happen\n");
-                    break;
+                    fprintf(stderr, "ILLEGAL TYPE\n");
+                    exit(EXIT_FAILURE);
+            }
+            for(Table* tt = t_man; tt; tt = tt->next){
+                Manifold* m = tt->entry->value.manifold;
+                switch(type){
+                    case T_EFFECT:
+                        printf("EFCT m%d %s\n", m->uid, t->entry->value.effect->function);
+                        break;
+                    default:
+                        fprintf(stderr, "ILLEGAL TYPE\n");
+                        exit(EXIT_FAILURE);
+                }
             }
         }
     }
 }
 
-void print_mil(Table* t){
-    if(t && t->entry){
-        Table* manifolds = table_recursive_get_type(t, T_MANIFOLD);
-        if(manifolds){
-            for(Table* t = manifolds; t; t = t->next){
-                printf("EMIT %s\n", t->entry->name);
+/* Some sections of Rat and Mouse have atomic left hand sides, rather than
+ * paths. In Mouse, only MANIFOLD is in this group. */
+void mil_pathless(Table* t_top, TType type){
+    Table* t_sec = table_recursive_get_type(t_top, type);
+    if(t_sec){
+        for(Table* t = t_sec; t; t = t->next){
+            switch(type){
+                case T_MANIFOLD:
+                    {
+                    Manifold* m = t->entry->value.manifold;
+                    printf("EMIT m%d\n", m->uid);
+                    printf("FUNC m%d %s\n", m->uid, m->function);
+                    }
+                    break;
+                default:
+                    fprintf(stderr, "ILLEGAL TYPE in mil_pathless\n");
+                    exit(EXIT_FAILURE);
             }
-        } else {
-            fprintf(stderr, "No manifolds found\n");
         }
+    }
+}
+
+void mil_effect(Table* t_top){
+    mil_couplet(t_top, T_EFFECT);
+}
+
+void mil_emit(Table* t_top){
+    mil_pathless(t_top, T_MANIFOLD);
+}
+
+void print_mil(Table* t_top){
+    if(t_top && t_top->entry){
+        mil_emit(t_top);
+        mil_effect(t_top);
     } else {
         fprintf(stderr, "The symbol table is empty - nothing to do\n");
     }
