@@ -12,7 +12,7 @@ H_LEXER=lex.yy.h
 C_PARSER=${TARGET}.tab.c
 H_PARSER=${TARGET}.tab.h
 
-FILES=${C_PARSER} ${C_LEXER} path.c table.c effect.c manifold.c entry.c
+FILES=${C_PARSER} ${C_LEXER} path.c table.c effect.c manifold.c entry.c mil.c
 
 all:
 	bison -d --report=all -Wall ${SRC_BISON}

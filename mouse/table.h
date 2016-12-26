@@ -11,7 +11,7 @@ typedef struct Table{
     struct Table* next;
 } Table;
 
-Table* table_new();
+Table* table_new(Entry* entry);
 
 Table* table_add(Table* table, Entry* entry);
 

@@ -2,12 +2,11 @@
     #include <stdio.h>
     #include "lex.yy.h"
 
-    int yylex(void);
     void yyerror(const char *);
 %}
 
 %code requires{
-#include "table.h"
+#include "mil.h"
 Table* table;
 }
 
@@ -25,8 +24,14 @@ Table* table;
 
 %%
 
+/* TODO
+ * [ ] fix the segfault in path_recursive_get_type
+ * [ ] add recursive copy for expanding groups
+ * [ ] add nesting
+ */
+
 input
-    : exp { table = table_add(table, $1); }
+    : exp { table = table_new($1); }
     | input exp { table = table_add(table, $2); }
 
 exp
@@ -42,12 +47,12 @@ composition
     : VARIABLE {
         Manifold* m = manifold_new($1);
         Entry* e = entry_new($1, T_MANIFOLD, m);
-        $$ = table_add(NULL, e);
+        $$ = table_new(e);
     }
     | composition '.' composition { $$ = table_join($1, $3); }
 
 %%
 
 void yyerror(char const *s){
-    fprintf(stderr, "Awww fuck! Got an errror: %s\n", s);
+    fprintf(stderr, "Oh no Mr. Wizard! %s\n", s);
 }

@@ -1,5 +1,4 @@
 %{
-#include <ctype.h>
 #include <stdio.h>
 
 #include "mouse.tab.h"
@@ -50,38 +49,13 @@ effect {
 
 %%
 
-void print_mil(Table* t){
-    if(t && t->entry){
-        for( ; t; t = t->next){
-            switch(t->entry->type){
-                case T_COMPOSITION:
-                    printf("COMPOSITION\n");
-                    print_mil(t->entry->value.composition);
-                    break;
-                case T_EFFECT:
-                    {
-                    Effect* e = t->entry->value.effect;
-                    printf("EFFECT %s %s\n", path_str(e->path), e->function);
-                    }
-                    break;
-                case T_MANIFOLD:
-                    printf("MANIFOLD\n");
-                    break;
-                case T_UNDEFINED:
-                    fprintf(stderr, "UNDEFINED - this shouldn't happen\n");
-                    break;
-                default:
-                    fprintf(stderr, "This really should not happen\n");
-                    break;
-            }
-        }
-    }
-}
-
 int main(void){
     toklog = fopen("tok.log", "w");
     int status = yyparse();
     fclose(toklog);
+    printf(" --- TABLE ---\n");
+    print_table(table);
+    printf(" --- MIL ---\n");
     print_mil(table);
     return status;
 }
