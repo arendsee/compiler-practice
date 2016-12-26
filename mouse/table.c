@@ -12,8 +12,11 @@ Table* table_add(Table* table, Entry* entry){
         table = table_new(entry);
     } else {
         if(table->entry){
+            // give new node the current value
             Table* newtab = table_new(table->entry);
+            // give current node the new value
             table->entry = entry;
+            // link new node as second (FIFO)
             newtab->next = table->next;
             table->next = newtab;
         } else {
@@ -25,13 +28,18 @@ Table* table_add(Table* table, Entry* entry){
 
 Table* table_join(Table* a, Table* b){
     if(b && b->entry){
-        Table* c = a;
-        for(; c->next; c = c->next){ }
-        c->next = b;
+        if(a && a->entry){
+            Table* c = a;
+            for(; c->next; c = c->next){ }
+            c->next = b;
+        } else {
+            a = b;
+        }
     }
     return a;
 }
 
+/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_get(Table* table, char* name, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t; t = t->next){
@@ -43,6 +51,7 @@ Table* table_get(Table* table, char* name, TType type){
     return out;
 } 
 
+/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_recursive_get(Table* table, char* name, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t->entry; t = t->next){
@@ -56,6 +65,7 @@ Table* table_recursive_get(Table* table, char* name, TType type){
     return out;
 }
 
+/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_path_get(Table* table, Path* path, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t->entry; t = t->next){
@@ -75,6 +85,7 @@ Table* table_path_get(Table* table, Path* path, TType type){
     return out;
 }
 
+/* WARNING - likely bug, see table_recursive_get_type */
 Table* table_get_type(Table* table, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t; t = t->next){
@@ -86,22 +97,18 @@ Table* table_get_type(Table* table, TType type){
 }
 
 Table* table_recursive_get_type(Table* table, TType type){
-    Table* out = table_new(NULL);
+    Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        fprintf(stderr, " - %s:%d - ", t->entry->name, t->entry->type); fflush(stderr);
         if(t->entry->type == type){
             out = table_add(out, t->entry);
         }
         if(t->entry->type == T_COMPOSITION){
-            Table* down = table_recursive_get_type(table->entry->value.composition, type);
+            Table* down = table_recursive_get_type(t->entry->value.composition, type);
             out = table_join(out, down);
         }
     }
-    if(!out->entry) out = NULL;
-
     return out;
 }
-
 
 Table* table_first(Table* table){
     return table;
