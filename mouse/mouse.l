@@ -11,16 +11,17 @@ FILE* toklog;
 %option header-file="lex.yy.h"
 %option noyywrap
 
-%x S_PATH
+%x S_SELECTION
 
-var     [a-zA-Z]+
-path    {var}({ws}*\/{ws}*{var})*
-ws      [ \t\n\r]
-comment #.*\n
+var       [a-zA-Z]+
+path      {var}({ws}*\/{ws}*{var})*
+selection {path}(,{path})*
+ws        [ \t\n\r]
+comment   #.*\n
 
 %%
 
-<INITIAL,S_PATH>{ws} { LOGV("%s", yytext); }
+<INITIAL,S_SELECTION>{ws} { LOGV("%s", yytext); }
 
 {comment} { }
 
@@ -29,7 +30,7 @@ composition {
     return COMPOSITION;
 }
 effect {
-    BEGIN(S_PATH);
+    BEGIN(S_SELECTION);
     LOG("EFFECT ");
     return EFFECT;
 }
@@ -38,11 +39,11 @@ effect {
     yylval.VARIABLE = strdup(yytext);
     return VARIABLE;
 }
-<S_PATH>{path} {
+<S_SELECTION>{selection} {
     BEGIN(INITIAL);
-    LOGV("PATH:%s ", yytext);
-    yylval.PATH = path_from_str(yytext);
-    return PATH;
+    LOGV("SELECTION:%s ", yytext);
+    yylval.SELECTION = selection_from_str(yytext);
+    return SELECTION;
 }
 
 .    { LOGV("%c ", yytext[0]); return yytext[0]; }

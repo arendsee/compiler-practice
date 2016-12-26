@@ -14,7 +14,7 @@ void mil_couplet(Table* t_top, TType type){
             Table* t_man;
             switch(type){
                 case T_EFFECT:
-                    t_man = table_path_get(t_top, t->entry->value.effect->path, T_MANIFOLD);
+                    t_man = table_selection_get(t_top, t->entry->value.effect->selection, T_MANIFOLD);
                     break;
                 default:
                     fprintf(stderr, "ILLEGAL TYPE\n");

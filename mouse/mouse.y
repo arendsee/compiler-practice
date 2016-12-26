@@ -13,7 +13,7 @@ Table* table;
 %define api.value.type union 
 
 %token <char*> VARIABLE
-%token <Path*> PATH
+%token <Selection*> SELECTION
 
 %type <Entry*> exp
 %type <Table*> composition
@@ -38,7 +38,7 @@ exp
     : COMPOSITION VARIABLE '=' composition {
         $$ = entry_new($2, T_COMPOSITION, $4);
     }
-    | EFFECT PATH '=' VARIABLE {
+    | EFFECT SELECTION '=' VARIABLE {
         Effect* effect = effect_new($2, $4);
         $$ = entry_new(NULL, T_EFFECT, effect); 
     }

@@ -3,13 +3,13 @@
 
 #include <stdlib.h>
 
-#include "path.h"
+#include "selection.h"
 
 typedef struct Effect{
-    Path* path;
+    Selection* selection;
     char* function; 
 } Effect;
 
-Effect* effect_new(Path* path, char* function);
+Effect* effect_new(Selection* selection, char* function);
 
 #endif

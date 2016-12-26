@@ -92,6 +92,14 @@ Table* table_path_get(Table* table, Path* path, TType type){
     return out;
 }
 
+Table* table_selection_get(Table* table, Selection* selection, TType type){
+    Table* out = NULL;
+    for(Selection* s = selection; s; s = s->next){
+        out = table_join(out, table_path_get(table, s->path, type));
+    }
+    return out;
+}
+
 Table* table_get_type(Table* table, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t; t = t->next){

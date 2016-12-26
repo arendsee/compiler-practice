@@ -1,8 +1,8 @@
 #include "effect.h"
 
-Effect* effect_new(Path* path, char* function){
+Effect* effect_new(Selection* selection, char* function){
     Effect* e = (Effect*)malloc(sizeof(Effect));
-    e->path = path;
+    e->selection = selection;
     e->function = function;
     return e;
 }

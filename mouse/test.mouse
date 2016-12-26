@@ -1,5 +1,8 @@
 composition A = h . g . f
+composition B = x . g . f
+composition C = y . g . f
 
-effect h = foo
+effect h,x,y = foo
 effect g = bar
-effect A/g = baz
+effect A/g,B/g = baz
+effect f = lilac
