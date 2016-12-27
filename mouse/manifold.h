@@ -9,6 +9,7 @@ typedef struct Manifold {
     // --- elements ----------------------------------------------------------
     char* function;
     char* effect;
+    struct Table* inputs;
 } Manifold;
 
 Manifold* manifold_new();

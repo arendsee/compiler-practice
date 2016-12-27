@@ -2,7 +2,7 @@
 
 Manifold* manifold_new(){
     static int uid = -1;
-    Manifold* m = (Manifold*)calloc(1, sizeof(Manifold));
+    Manifold* m = (Manifold*)calloc(1,sizeof(Manifold));
     m->uid = ++uid;
     return m;
 }

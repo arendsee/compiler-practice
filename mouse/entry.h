@@ -36,4 +36,6 @@ Entry* entry_copy(const Entry* e);
 /* copy an entry and unlink it */
 Entry* entry_isolate(const Entry* e);
 
+void entry_print(const Entry* e);
+
 #endif

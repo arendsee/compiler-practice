@@ -1,5 +1,33 @@
 #include "mil.h"
 
+// link all top level elements in c_{i+1} as inputs to c_i
+void mil_link_inputs(Table* t_top){
+    Table* t_path = table_recursive_get_type(t_top, T_PATH);
+    for(Entry* e_path = t_path->head; e_path; e_path = e_path->next){
+/* entry_print(e_path); */
+        for(Entry* e_com = e_path->value.table->head; e_com; e_com = e_com->next){
+/* printf("  ");                                                     */
+/* entry_print(e_com);                                               */
+/* if(e_com->type == C_COMPOSON){                                    */
+/*     for(Entry* ee = e_com->value.table->head; ee; ee = ee->next){ */
+/*         printf("    ");                                           */
+/*         entry_print(ee);                                          */
+/*     }                                                             */
+/* }                                                                 */
+            Table* outputs = table_composon_outputs(e_com->next);
+            if(!outputs){
+                continue;
+            }
+            Table* inputs = table_composon_inputs(e_com);
+            for(Entry* o = outputs->head; o; o = o->next){
+                for(Entry* i = inputs->head; i; i = i->next){
+                    i->value.manifold->inputs = table_add(i->value.manifold->inputs, o);
+                }
+            }
+        }
+    }
+}
+
 /* Mouse has only one couplet type: EFFECT. Rat has a bunch. So the switch
  * statements will be more populous. This function does the following: 
  *  1. Find all couplets of the given type
@@ -39,12 +67,22 @@ void mil_couplet(Table* t_top, TType type){
 }
 
 void print_manifold_mil(Manifold* m){
-    printf("EMIT m%d\n", m->uid);
-    printf("FUNC m%d %s\n", m->uid, m->function);
-    printf("EFCT m%d %s\n", m->uid, m->effect);
+    if(m){
+        printf("EMIT m%d\n", m->uid);
+        if(m->function)
+            printf("FUNC m%d %s\n", m->uid, m->function);
+        if(m->inputs){
+            for(Entry* i = m->inputs->head; i; i = i->next){
+                printf("INPT m%d m%d\n", m->uid, i->value.manifold->uid);
+            }
+        }
+        if(m->effect)
+            printf("EFCT m%d %s\n", m->uid, m->effect);
+    }
 }
 
 void build_manifolds(Table* t_top){
+    mil_link_inputs(t_top);
     /* add other couplets, e.g. cache */
     mil_couplet(t_top, T_EFFECT);
 }
@@ -55,6 +93,9 @@ void print_manifolds(Table* t_top){
     Table* t_man = table_recursive_get_type(t_top, C_MANIFOLD);
     for(Entry* e = t_man->head; e; e = e->next){
         print_manifold_mil(e->value.manifold);
+        if(e->next){
+            printf("\n");
+        }
     }
 }
 

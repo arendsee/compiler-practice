@@ -14,6 +14,14 @@ typedef struct Table{
 /* Copies entry and removes its link */
 Table* table_new(const Entry* entry);
 
+/* Given a composon, get an ordered list of the functions that produce output */
+Table* table_composon_outputs(const Entry* entry);
+
+/* Given a composon, get a list of manifolds that receive input. This list is
+ * ordered, but needn't be, since order doesn't matter: each manifold is linked
+ * to each output of the following coposon. */
+Table* table_composon_inputs(const Entry* entry);
+
 /* Copies entry and removes its link */
 Table* table_add(Table* table, const Entry* entry);
 

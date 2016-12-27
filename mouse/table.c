@@ -33,6 +33,46 @@ Table* _table_new(Entry* e){
     return t;
 }
 
+Table* _table_composon_io(const Entry* entry, bool is_input){
+    if(!entry){
+        return NULL;
+    }
+    if(!(TCMP(entry, C_COMPOSON) || TCMP(entry, C_NEST))){
+        fprintf(stderr,
+            "ERROR: input must be a composon in "
+            "table_composon_{in/out}puts, returning NULL.\n"); 
+        return NULL;
+    }
+    Table* result = NULL;
+    for(Entry* e = entry->value.table->head; e; e = e->next){
+        switch(e->type){
+            case C_MANIFOLD:
+                result = table_add(result, e);
+                break;
+            case C_NEST:
+                {
+                    // output comes from the first (outermost) composon of the
+                    // nested expression, while input goes to the last
+                    // (innermost).
+                    Entry* ne = is_input ? e->value.table->tail : e->value.table->head;
+                    result = table_join(result, _table_composon_io(ne, is_input));
+                }
+                break;
+            default:
+                fprintf(stderr, "Illegal type in composition\n");
+        }
+    }
+    return result;
+}
+
+Table* table_composon_outputs(const Entry* entry){
+    return _table_composon_io(entry, false);
+}
+
+Table* table_composon_inputs(const Entry* entry){
+    return _table_composon_io(entry, true);
+}
+
 Table* table_add(Table* table, const Entry* entry){
     Entry* e = entry_isolate(entry);
     if(!table){

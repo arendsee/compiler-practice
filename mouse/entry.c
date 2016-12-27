@@ -45,3 +45,54 @@ Entry* entry_isolate(const Entry* e){
     new_entry->next = NULL;
     return new_entry;
 }
+
+char* type_str(const Entry* e){
+    char* s;
+    switch(e->type){
+        case T_PATH:
+            s = strdup("T_PATH");
+            break;
+        case C_COMPOSON:
+            s = strdup("T_COMPOSON");
+            break;
+        case C_NEST:
+            s = strdup("C_NEST");
+            break;
+        case C_MANIFOLD:
+            s = strdup("C_MANIFOLD");
+            break;
+        case T_EFFECT:
+            s = strdup("T_EFFECT");
+            break;
+        case T_UNDEFINED:
+            s = strdup("T_UNDEFINED");
+            break;
+        default:
+            s = strdup("ILLEGAL");
+            break;
+    }
+    return s;
+}
+
+void entry_print(const Entry* e){
+    if(e){
+        if(e->id){
+            if(e->id->label){
+                printf("%s:%s %s\n",
+                    e->id->name,
+                    e->id->label,
+                    type_str(e)
+                );
+            } else {
+                printf("%s %s\n",
+                    e->id->name,
+                    type_str(e)
+                );
+            }
+        } else {
+            printf("noid %s\n", type_str(e));
+        }
+    } else {
+        printf("null_entry\n");
+    }
+}
