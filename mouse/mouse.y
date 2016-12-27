@@ -49,6 +49,7 @@ exp
 composition
     : VARIABLE {
         Manifold* m = manifold_new();
+        m->function = $1->name;
         Entry* e = entry_new($1, T_MANIFOLD, m);
         $$ = table_new(e);
     }

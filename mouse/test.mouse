@@ -1,8 +1,9 @@
-composition A = h . g . f
-composition B = x . g . f . g:3
+composition Ali = h . g . f
+composition B = x . g . f . g:yolo
 composition C = y . g . f
 
 effect h,x,y = foo
 effect g = bar
-effect A/g,B/g = baz
+effect Ali/g,B/g = baz
 effect f = lilac
+effect g:yolo = ladida
