@@ -4,3 +4,4 @@ lex.yy.*
 *.output
 tok.log
 tags
+vgcore.*

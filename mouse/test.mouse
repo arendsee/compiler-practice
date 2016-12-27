@@ -1,5 +1,5 @@
-composition Ali = h . g . f
-composition B = x . g . f . g:yolo
+composition Ali = (h . lollipop) . g . f
+composition B = x . (g . lollipop) lollipop:ultra . f . g:yolo
 composition C = y . g . f
 
 effect h,x,y = foo
@@ -7,3 +7,6 @@ effect g = bar
 effect Ali/g:yoko,B/g = baz
 effect f = lilac
 effect g:yolo = ladida
+effect lollipop = stickyhand
+effect B/lollipop = colortongue
+effect lollipop:ultra = fabuloussparkleshine

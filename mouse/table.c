@@ -63,14 +63,20 @@ Table* table_join(Table* a, Table* b){
     return a;
 }
 
+bool is_recursive(TType type){
+    return type == T_PATH ||
+           type == C_COMPOSON ||
+           type == C_NEST;
+}
+
 Table* table_recursive_get(const Table* table, Id* id, TType type){
     Table* out = NULL;
     for(Entry* e = table->head; e; e = e->next){
         if(STCMP(e, id, type)){
             out = table_add(out, e);
         }
-        if(TCMP(e, T_COMPOSITION)){
-            out = table_join(out, table_recursive_get(e->value.composition, id, type)); 
+        if(is_recursive(e->type)){
+            out = table_join(out, table_recursive_get(e->value.table, id, type)); 
         }
     }
     return out;
@@ -83,12 +89,12 @@ Table* table_path_get(const Table* table, Path* path, TType type){
             if(STCMP(e, path->id, type)){
                 out = table_add(out, e);
             }
-            if(TCMP(e, T_COMPOSITION)){
-                out = table_join(out, table_recursive_get(e->value.composition, path->id, type));
+            if(is_recursive(e->type)){
+                out = table_join(out, table_recursive_get(e->value.table, path->id, type));
             }
         } else {
-            if(STCMP(e, path->id, T_COMPOSITION)){
-                out = table_join(out, table_path_get(e->value.composition, path->next, type));
+            if(SCMP(e, path->id) && is_recursive(e->type)){
+                out = table_join(out, table_path_get(e->value.table, path->next, type));
             }
         }
     }
@@ -110,8 +116,8 @@ Table* table_recursive_get_type(const Table* table, TType type){
         if(TCMP(e, type)){
             out = table_add(out, e);
         }
-        if(TCMP(e, T_COMPOSITION)){
-            Table* down = table_recursive_get_type(e->value.composition, type);
+        if(is_recursive(e->type)){
+            Table* down = table_recursive_get_type(e->value.table, type);
             out = table_join(out, down);
         }
     }

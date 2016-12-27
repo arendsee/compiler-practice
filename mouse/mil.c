@@ -14,7 +14,7 @@ void mil_couplet(Table* t_top, TType type){
             Table* t_man = NULL;
             switch(type){
                 case T_EFFECT:
-                    t_man = table_selection_get(t_top, e->value.effect->selection, T_MANIFOLD);
+                    t_man = table_selection_get(t_top, e->value.effect->selection, C_MANIFOLD);
                     break;
                 default:
                     fprintf(stderr, "ILLEGAL TYPE\n");
@@ -52,7 +52,7 @@ void build_manifolds(Table* t_top){
 void print_prolog(Table* t_top){ }
 
 void print_manifolds(Table* t_top){
-    Table* t_man = table_recursive_get_type(t_top, T_MANIFOLD);
+    Table* t_man = table_recursive_get_type(t_top, C_MANIFOLD);
     for(Entry* e = t_man->head; e; e = e->next){
         print_manifold_mil(e->value.manifold);
     }

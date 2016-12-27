@@ -21,14 +21,9 @@ Table* table;
 %token EFFECT COMPOSITION
 
 %left '.'
+%precedence CONCAT
 
 %%
-
-/* TODO
- * [ ] fix the segfault in path_recursive_get_type
- * [ ] add recursive copy for expanding groups
- * [ ] add nesting
- */
 
 input
     : exp { table = table_new($1); }
@@ -36,7 +31,7 @@ input
 
 exp
     : COMPOSITION VARIABLE '=' composition {
-        $$ = entry_new($2, T_COMPOSITION, $4);
+        $$ = entry_new($2, T_PATH, $4);
     }
     | EFFECT SELECTION '=' VARIABLE {
         if($4->label){
@@ -50,9 +45,12 @@ composition
     : VARIABLE {
         Manifold* m = manifold_new();
         m->function = $1->name;
-        Entry* e = entry_new($1, T_MANIFOLD, m);
-        $$ = table_new(e);
+        Entry* e = entry_new($1, C_MANIFOLD, m);
+        Entry* c = entry_new(NULL, C_COMPOSON, table_new(e));
+        $$ = table_new(c);
     }
+    | '(' composition ')' { $$ = $2; }
+    | composition composition %prec CONCAT { $$ = table_add($1->tail->value.table, $2->head); }
     | composition '.' composition { $$ = table_join($1, $3); }
 
 %%

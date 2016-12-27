@@ -21,15 +21,6 @@ Path* path_put(Path* path, Id* id){
     return path;
 }
 
-Id* path_pop(Path* path){
-    Id* id = NULL;
-    if(path && path->id){
-        id = path->id;
-        path = path->next;
-    }
-    return id;
-}
-
 bool path_is_base(Path* path){
     return path->next == NULL;
 }

@@ -5,11 +5,18 @@ Entry* entry_new(Id* id, TType type, void* value){
     e->type = type;
     e->id = id;
     e->next = NULL;
+
     switch(type){
-        case T_COMPOSITION:
-            e->value.composition = value;
+        case T_PATH:
+            e->value.table = value;
             break;
-        case T_MANIFOLD:
+        case C_COMPOSON:
+            e->value.table = value;
+            break;
+        case C_NEST:
+            e->value.table = value;
+            break;
+        case C_MANIFOLD:
             e->value.manifold = value;
             break;
         case T_EFFECT:

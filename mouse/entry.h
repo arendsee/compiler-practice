@@ -8,16 +8,23 @@
 #include "id.h"
 
 
-typedef enum { T_UNDEFINED=0, T_COMPOSITION, T_MANIFOLD, T_EFFECT } TType;
+typedef enum {
+    T_UNDEFINED=0,
+    T_EFFECT,
+    T_PATH,
+    C_COMPOSON,
+    C_MANIFOLD,
+    C_NEST
+} TType;
 
 typedef struct Entry{
     Id* id;
     TType type;
     struct Entry* next;
     union {
-        struct Table* composition;
-        Manifold* manifold;
         Effect* effect;
+        struct Table* table;
+        Manifold* manifold;
     } value;
 } Entry;
 

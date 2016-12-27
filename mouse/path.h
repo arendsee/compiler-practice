@@ -7,7 +7,7 @@
 
 #include "id.h"
 
-/* FIFO linked list */
+/* FILO linked list */
 typedef struct Path{
     struct Path* next;
     Id* id; 
