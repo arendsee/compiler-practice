@@ -7,31 +7,23 @@
 #include "entry.h"
 
 typedef struct Table{
-    Entry* entry;
-    struct Table* next;
+    Entry* head;
+    Entry* tail;
 } Table;
 
-Table* table_new(Entry* entry);
+/* Copies entry and removes its link */
+Table* table_new(const Entry* entry);
 
-Table* table_add(Table* table, Entry* entry);
+/* Copies entry and removes its link */
+Table* table_add(Table* table, const Entry* entry);
 
+/* b is destroyed upon join */
 Table* table_join(Table* a, Table* b);
 
-Table* table_get(Table* table, Id* id, TType type); 
+Table* table_selection_get(const Table* table, Selection* name, TType type); 
 
-Table* table_selection_get(Table* table, Selection* name, TType type); 
+Table* table_recursive_get(const Table* table, Id* id, TType type); 
 
-Table* table_recursive_get(Table* table, Id* id, TType type); 
-
-Table* table_get_type(Table* table, TType type);
-
-Table* table_recursive_get_type(Table* table, TType type);
-
-/* Recursively reverse a table */
-Table* table_reverse(Table* table);
-
-Table* table_first(Table* table);
-
-Table* table_next(Table* table);
+Table* table_recursive_get_type(const Table* table, TType type);
 
 #endif

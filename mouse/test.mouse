@@ -4,6 +4,6 @@ composition C = y . g . f
 
 effect h,x,y = foo
 effect g = bar
-effect Ali/g,B/g = baz
+effect Ali/g:yoko,B/g = baz
 effect f = lilac
 effect g:yolo = ladida

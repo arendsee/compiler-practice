@@ -54,7 +54,6 @@ int main(void){
     toklog = fopen("tok.log", "w");
     int status = yyparse();
     fclose(toklog);
-    table = table_reverse(table);
     print_mil(table);
     return status;
 }

@@ -4,6 +4,7 @@ Entry* entry_new(Id* id, TType type, void* value){
     Entry* e = (Entry*)malloc(sizeof(Entry));
     e->type = type;
     e->id = id;
+    e->next = NULL;
     switch(type){
         case T_COMPOSITION:
             e->value.composition = value;
@@ -24,4 +25,16 @@ Entry* entry_new(Id* id, TType type, void* value){
             break;
     }
     return e;
+}
+
+Entry* entry_copy(const Entry* e){
+   Entry* new_entry = (Entry*)malloc(sizeof(Entry));
+   memcpy(new_entry, e, sizeof(Entry)); 
+   return new_entry;
+}
+
+Entry* entry_isolate(const Entry* e){
+    Entry* new_entry = entry_copy(e);
+    new_entry->next = NULL;
+    return new_entry;
 }

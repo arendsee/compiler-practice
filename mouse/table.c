@@ -11,38 +11,51 @@
 
 #define SCMP(e, i) ((e)->id && (i) && id_cmp((e)->id, (i)))
 
-Table* table_new(Entry* entry){
+Table* table_new(const Entry* entry){
     Table* t = (Table*)malloc(sizeof(Table));
-    t->entry = entry;
-    t->next = NULL;
+    Entry* e = entry_isolate(entry);
+    t->head = e;
+    t->tail = e;
     return t;
 }
 
-Table* table_add(Table* table, Entry* entry){
+/* checkless attachment */
+void _retail(Table* t, Entry* e){
+    t->tail->next = e;
+    t->tail = e;
+}
+
+/* no copy constructor, no reset */
+Table* _table_new(Entry* e){
+    Table* t = (Table*)malloc(sizeof(Table));
+    t->head = e;
+    t->tail = e;
+    return t;
+}
+
+Table* table_add(Table* table, const Entry* entry){
+    Entry* e = entry_isolate(entry);
     if(!table){
-        table = table_new(entry);
+        table = _table_new(e);
     } else {
-        if(table->entry){
-            // give new node the current value
-            Table* newtab = table_new(table->entry);
-            // give current node the new value
-            table->entry = entry;
-            // link new node as second (FIFO)
-            newtab->next = table->next;
-            table->next = newtab;
+        if(table->tail){
+            _retail(table, e);
         } else {
-            table->entry = entry;
+            fprintf(stderr, "WARNING: cannot add to tailless table\n");
         }
     }
     return table;
 }
 
+void _join(Table* a, Table* b){
+    a->tail->next = b->head;
+    a->tail = b->tail;
+}
+
 Table* table_join(Table* a, Table* b){
-    if(b && b->entry){
-        if(a && a->entry){
-            Table* c = a;
-            for(; c->next; c = c->next){ }
-            c->next = b;
+    if(b && b->head){
+        if(a && a->head){
+            _join(a, b);
         } else {
             a = b;
         }
@@ -50,104 +63,59 @@ Table* table_join(Table* a, Table* b){
     return a;
 }
 
-Table* table_get(Table* table, Id* id, TType type){
+Table* table_recursive_get(const Table* table, Id* id, TType type){
     Table* out = NULL;
-    for(Table* t = table; t; t = t->next){
-        if(STCMP(t->entry, id, type)){
-            out = table_add(out, t->entry);
+    for(Entry* e = table->head; e; e = e->next){
+        if(STCMP(e, id, type)){
+            out = table_add(out, e);
         }
-    }
-    return out;
-} 
-
-Table* table_recursive_get(Table* table, Id* id, TType type){
-    Table* out = NULL;
-    for(Table* t = table; t; t = t->next){
-        if(STCMP(t->entry, id, type)){
-            out = table_add(out, t->entry);
-        }
-        if(TCMP(t->entry, T_COMPOSITION)){
-            out = table_join(out, table_recursive_get(t->entry->value.composition, id, type)); 
+        if(TCMP(e, T_COMPOSITION)){
+            out = table_join(out, table_recursive_get(e->value.composition, id, type)); 
         }
     }
     return out;
 }
 
-Table* table_path_get(Table* table, Path* path, TType type){
+Table* table_path_get(const Table* table, Path* path, TType type){
     Table* out = NULL;
-    for(Table* t = table; t; t = t->next){
+    for(Entry* e = table->head; e; e = e->next){
         if(path_is_base(path)){
-            if(STCMP(t->entry, path->id, type)){
-                out = table_add(out, t->entry);
+            if(STCMP(e, path->id, type)){
+                out = table_add(out, e);
             }
-            if(TCMP(t->entry, T_COMPOSITION)){
-                out = table_join(out, table_recursive_get(t->entry->value.composition, path->id, type));
+            if(TCMP(e, T_COMPOSITION)){
+                out = table_join(out, table_recursive_get(e->value.composition, path->id, type));
             }
         } else {
-            if(STCMP(t->entry, path->id, T_COMPOSITION)){
-                out = table_join(out, table_path_get(t->entry->value.composition, path->next, type));
+            if(STCMP(e, path->id, T_COMPOSITION)){
+                out = table_join(out, table_path_get(e->value.composition, path->next, type));
             }
         }
     }
     return out;
 }
 
-Table* table_selection_get(Table* table, Selection* selection, TType type){
+Table* table_selection_get(const Table* table, Selection* selection, TType type){
     Table* out = NULL;
     for(Selection* s = selection; s; s = s->next){
-        out = table_join(out, table_path_get(table, s->path, type));
+        Table* b = table_path_get(table, s->path, type);
+        out = table_join(out, b);
     }
     return out;
 }
 
-Table* table_get_type(Table* table, TType type){
-    Table* out = table_new(NULL);
-    for(Table* t = table; t; t = t->next){
-        if(TCMP(t->entry, type))
-            out = table_add(out, t->entry);
-    }
-    return out;
-}
-
-Table* table_recursive_get_type(Table* table, TType type){
+Table* table_recursive_get_type(const Table* table, TType type){
     Table* out = NULL;
-    for(Table* t = table; t; t = t->next){
-        if(TCMP(t->entry, type)){
-            out = table_add(out, t->entry);
+    for(Entry* e = table->head; e; e = e->next){
+        if(TCMP(e, type)){
+            out = table_add(out, e);
         }
-        if(TCMP(t->entry, T_COMPOSITION)){
-            Table* down = table_recursive_get_type(t->entry->value.composition, type);
+        if(TCMP(e, T_COMPOSITION)){
+            Table* down = table_recursive_get_type(e->value.composition, type);
             out = table_join(out, down);
         }
     }
     return out;
-}
-
-Table* table_reverse(Table* table){
-    Table* prev = NULL;
-    Table* next = NULL;
-    while(table){
-        next = table->next;
-        table->next = prev;
-        prev = table;
-        if(next){
-            table = next;
-            if(TCMP(table->entry, T_COMPOSITION)){
-                table->entry->value.composition = table_reverse(table->entry->value.composition);
-            }
-        } else {
-            break;
-        }
-    }
-    return table;
-}
-
-Table* table_first(Table* table){
-    return table;
-}
-
-Table* table_next(Table* table){
-    return table->next;
 }
 
 #undef STCMP
