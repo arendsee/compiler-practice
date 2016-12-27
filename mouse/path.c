@@ -8,54 +8,30 @@ Path* path_new(){
 /* Each new element is appended to the end. Since I don't store the last
  * element, I have to look it up in linear time. However, there will usually be
  * few elements in the path, so the simplicity of this approach wins. */
-Path* path_put(Path* path, char* name){
-    if(path->name){
+Path* path_put(Path* path, Id* id){
+    if(path->id){
         Path* new = path_new();    
-        new->name = name;
+        new->id = id;
         Path* c = path;
         for( ; c->next; c = c->next) {}
         c->next = new;
     } else {
-        path->name = name;
+        path->id = id;
     }
     return path;
 }
 
-char* path_pop(Path* path){
-    char* name = NULL;
-    if(path && path->name){
-        name = path->name;
+Id* path_pop(Path* path){
+    Id* id = NULL;
+    if(path && path->id){
+        id = path->id;
         path = path->next;
     }
-    return name;
+    return id;
 }
 
 bool path_is_base(Path* path){
     return path->next == NULL;
-}
-
-char* path_str(Path* path){
-    if(!path || !path->name){
-        return NULL;
-    }
-    int n = 0;
-    int length = 0;
-    for(Path* p = path; p; p = p->next){
-        n++;
-        length += strlen(p->name);
-    }
-    length += n - 1;
-    char* s = (char*)calloc(length + 1, sizeof(char));
-    int pos = 0;
-    for(Path* p = path; p; p = p->next){
-        strcpy(s+pos, p->name);
-        pos += strlen(p->name);
-        if(p->next){
-            s[pos] = '/';
-            pos++;
-        }
-    }
-    return s;
 }
 
 Path* path_from_str(char* path_str){
@@ -63,12 +39,12 @@ Path* path_from_str(char* path_str){
     Path* p = path_new();
     for(int i = 0; ; i++){
         if(s[i] == '\0'){
-            p = path_put(p, strdup(s));
+            p = path_put(p, id_from_str(s));
             break;
         }
         else if(s[i] == '/'){
             s[i] = '\0';
-            p = path_put(p, strdup(s));
+            p = path_put(p, id_from_str(s));
             s = s + i + 1;
             i = 0;
         }

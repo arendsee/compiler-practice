@@ -12,7 +12,7 @@ Table* table;
 
 %define api.value.type union 
 
-%token <char*> VARIABLE
+%token <Id*> VARIABLE
 %token <Selection*> SELECTION
 
 %type <Entry*> exp
@@ -39,13 +39,16 @@ exp
         $$ = entry_new($2, T_COMPOSITION, $4);
     }
     | EFFECT SELECTION '=' VARIABLE {
-        Effect* effect = effect_new($2, $4);
+        if($4->label){
+            fprintf(stderr, "WARNING: labels are ignored on rhs of effect\n");
+        }
+        Effect* effect = effect_new($2, $4->name);
         $$ = entry_new(NULL, T_EFFECT, effect); 
     }
 
 composition
     : VARIABLE {
-        Manifold* m = manifold_new($1);
+        Manifold* m = manifold_new();
         Entry* e = entry_new($1, T_MANIFOLD, m);
         $$ = table_new(e);
     }

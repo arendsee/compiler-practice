@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "id.h"
+
 /* FIFO linked list */
 typedef struct Path{
     struct Path* next;
-    char* name; 
+    Id* id; 
 } Path;
 
 Path* path_from_str(char*);

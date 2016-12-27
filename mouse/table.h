@@ -17,11 +17,11 @@ Table* table_add(Table* table, Entry* entry);
 
 Table* table_join(Table* a, Table* b);
 
-Table* table_get(Table* table, char* name, TType type); 
+Table* table_get(Table* table, Id* id, TType type); 
 
 Table* table_selection_get(Table* table, Selection* name, TType type); 
 
-Table* table_recursive_get(Table* table, char* name, TType type); 
+Table* table_recursive_get(Table* table, Id* id, TType type); 
 
 Table* table_get_type(Table* table, TType type);
 

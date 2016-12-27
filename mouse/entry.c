@@ -1,9 +1,9 @@
 #include "entry.h"
 
-Entry* entry_new(char* name, TType type, void* value){
+Entry* entry_new(Id* id, TType type, void* value){
     Entry* e = (Entry*)malloc(sizeof(Entry));
     e->type = type;
-    e->name = name;
+    e->id = id;
     switch(type){
         case T_COMPOSITION:
             e->value.composition = value;

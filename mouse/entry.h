@@ -5,11 +5,13 @@
 
 #include "effect.h"
 #include "manifold.h"
+#include "id.h"
+
 
 typedef enum { T_UNDEFINED=0, T_COMPOSITION, T_MANIFOLD, T_EFFECT } TType;
 
 typedef struct Entry{
-    char* name;
+    Id* id;
     TType type;
     union {
         struct Table* composition;
@@ -18,6 +20,6 @@ typedef struct Entry{
     } value;
 } Entry;
 
-Entry* entry_new(char* name, TType type, void* value);
+Entry* entry_new(Id* id, TType type, void* value);
 
 #endif

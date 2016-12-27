@@ -2,13 +2,15 @@
 #define __MANIFOLD_H__
 
 #include <stdlib.h>
+#include <string.h>
 
-typedef struct Manifold{
+typedef struct Manifold {
+    int uid; // an id unique to this manifold
+    // --- elements ----------------------------------------------------------
     char* function;
     char* effect;
-    int uid;
 } Manifold;
 
-Manifold* manifold_new(char* function);
+Manifold* manifold_new();
 
 #endif

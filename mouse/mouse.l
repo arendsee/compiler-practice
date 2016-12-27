@@ -13,7 +13,7 @@ FILE* toklog;
 
 %x S_SELECTION
 
-var       [a-zA-Z]+
+var       [a-zA-Z]+(:[a-zA-Z0-9]+)?
 path      {var}({ws}*\/{ws}*{var})*
 selection {path}(,{path})*
 ws        [ \t\n\r]
@@ -36,7 +36,7 @@ effect {
 }
 {var} { 
     LOGV("VARIABLE:%s ", yytext);
-    yylval.VARIABLE = strdup(yytext);
+    yylval.VARIABLE = id_from_str(yytext);
     return VARIABLE;
 }
 <S_SELECTION>{selection} {

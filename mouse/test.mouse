@@ -1,5 +1,5 @@
 composition A = h . g . f
-composition B = x . g . f
+composition B = x . g . f . g:3
 composition C = y . g . f
 
 effect h,x,y = foo

@@ -1,15 +1,15 @@
 #include "table.h"
 
-#define STCMP(s1, s2, t1, t2)      \
-    (                              \
-        (s1) && (s2) && (t1) &&    \
-        strcmp((s1), (s2)) == 0 && \
-        (t1) == (t2)               \
+#define STCMP(e, i, t)           \
+    (                            \
+        (e)->id && (i) && (t) && \
+        id_cmp((e)->id, (i)) &&  \
+        (e)->type == (t)         \
     )
 
-#define TCMP(t1, t2) ((t1) && (t1) == (t2))
+#define TCMP(e, t) ((e) && (e)->type == (t))
 
-#define SCMP(s1, s2) ((s1) && (s2) && strcmp((s1), (s2)) == 0)
+#define SCMP(e, i) ((e)->id && (i) && id_cmp((e)->id, (i)))
 
 Table* table_new(Entry* entry){
     Table* t = (Table*)malloc(sizeof(Table));
@@ -50,24 +50,24 @@ Table* table_join(Table* a, Table* b){
     return a;
 }
 
-Table* table_get(Table* table, char* name, TType type){
+Table* table_get(Table* table, Id* id, TType type){
     Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        if(STCMP(t->entry->name, name, t->entry->type, type)){
+        if(STCMP(t->entry, id, type)){
             out = table_add(out, t->entry);
         }
     }
     return out;
 } 
 
-Table* table_recursive_get(Table* table, char* name, TType type){
+Table* table_recursive_get(Table* table, Id* id, TType type){
     Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        if(STCMP(t->entry->name, name, t->entry->type, type)){
+        if(STCMP(t->entry, id, type)){
             out = table_add(out, t->entry);
         }
-        if(TCMP(t->entry->type, T_COMPOSITION)){
-            out = table_join(out, table_recursive_get(t->entry->value.composition, name, type)); 
+        if(TCMP(t->entry, T_COMPOSITION)){
+            out = table_join(out, table_recursive_get(t->entry->value.composition, id, type)); 
         }
     }
     return out;
@@ -77,14 +77,14 @@ Table* table_path_get(Table* table, Path* path, TType type){
     Table* out = NULL;
     for(Table* t = table; t; t = t->next){
         if(path_is_base(path)){
-            if(STCMP(t->entry->name, path->name, t->entry->type, type)){
+            if(STCMP(t->entry, path->id, type)){
                 out = table_add(out, t->entry);
             }
-            if(TCMP(t->entry->type, T_COMPOSITION)){
-                out = table_join(out, table_recursive_get(t->entry->value.composition, path->name, type));
+            if(TCMP(t->entry, T_COMPOSITION)){
+                out = table_join(out, table_recursive_get(t->entry->value.composition, path->id, type));
             }
         } else {
-            if(STCMP(t->entry->name, path->name, t->entry->type, T_COMPOSITION)){
+            if(STCMP(t->entry, path->id, T_COMPOSITION)){
                 out = table_join(out, table_path_get(t->entry->value.composition, path->next, type));
             }
         }
@@ -103,9 +103,8 @@ Table* table_selection_get(Table* table, Selection* selection, TType type){
 Table* table_get_type(Table* table, TType type){
     Table* out = table_new(NULL);
     for(Table* t = table; t; t = t->next){
-        Entry* e = t->entry;
-        if(TCMP(e->type, type))
-            out = table_add(out, e);
+        if(TCMP(t->entry, type))
+            out = table_add(out, t->entry);
     }
     return out;
 }
@@ -113,10 +112,10 @@ Table* table_get_type(Table* table, TType type){
 Table* table_recursive_get_type(Table* table, TType type){
     Table* out = NULL;
     for(Table* t = table; t; t = t->next){
-        if(TCMP(t->entry->type, type)){
+        if(TCMP(t->entry, type)){
             out = table_add(out, t->entry);
         }
-        if(TCMP(t->entry->type, T_COMPOSITION)){
+        if(TCMP(t->entry, T_COMPOSITION)){
             Table* down = table_recursive_get_type(t->entry->value.composition, type);
             out = table_join(out, down);
         }
@@ -133,7 +132,7 @@ Table* table_reverse(Table* table){
         prev = table;
         if(next){
             table = next;
-            if(TCMP(table->entry->type, T_COMPOSITION)){
+            if(TCMP(table->entry, T_COMPOSITION)){
                 table->entry->value.composition = table_reverse(table->entry->value.composition);
             }
         } else {
