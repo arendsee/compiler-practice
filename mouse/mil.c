@@ -3,21 +3,13 @@
 // link all top level elements in c_{i+1} as inputs to c_i
 void mil_link_inputs(Table* t_top){
     Table* t_path = table_recursive_get_type(t_top, T_PATH);
+    t_path = table_join(t_path, table_recursive_get_type(t_top, C_NEST));
     for(Entry* e_path = t_path->head; e_path; e_path = e_path->next){
-/* entry_print(e_path); */
         for(Entry* e_com = e_path->value.table->head; e_com; e_com = e_com->next){
-/* printf("  ");                                                     */
-/* entry_print(e_com);                                               */
-/* if(e_com->type == C_COMPOSON){                                    */
-/*     for(Entry* ee = e_com->value.table->head; ee; ee = ee->next){ */
-/*         printf("    ");                                           */
-/*         entry_print(ee);                                          */
-/*     }                                                             */
-/* }                                                                 */
             Table* outputs = table_composon_outputs(e_com->next);
-            if(!outputs){
-                continue;
-            }
+
+            if(!outputs) continue;
+
             Table* inputs = table_composon_inputs(e_com);
             for(Entry* o = outputs->head; o; o = o->next){
                 for(Entry* i = inputs->head; i; i = i->next){

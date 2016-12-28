@@ -50,7 +50,11 @@ composition
         $$ = table_new(c);
     }
     | '(' composition ')' { $$ = $2; }
-    | composition composition %prec CONCAT { $$ = table_add($1->tail->value.table, $2->head); }
+    | composition composition %prec CONCAT {
+        Entry* e = entry_new(NULL, C_NEST, $2);
+        $1->tail->value.table = table_add($1->tail->value.table, e);
+        $$ = $1;
+    }
     | composition '.' composition { $$ = table_join($1, $3); }
 
 %%

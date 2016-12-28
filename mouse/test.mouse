@@ -14,9 +14,8 @@
 
 
 # this all works
-composition A = y . g . f
-composition B = (foo . bar) . baz
-composition C = (foo . (bar . cats)) . (baz . treebeard)
+# composition A = y . g . f
+# composition B = (foo . bar) . baz
+# composition C = (foo . (bar . cats)) . (baz . treebeard)
 
-# # But this explodes:
-# composition Death = x y . z
+composition Death = x y (foo . bar) . z
