@@ -19,3 +19,5 @@
 # composition C = (foo . (bar . cats)) . (baz . treebeard)
 
 composition Death = x y (foo . bar) . z
+
+effect x = yolo

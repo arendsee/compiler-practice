@@ -5,3 +5,5 @@ lex.yy.*
 tok.log
 tags
 vgcore.*
+
+__pycache__
