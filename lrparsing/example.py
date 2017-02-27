@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 
-# This example is adapted directly from the documentation for lrparsing:
-# http://lrparsing.sourceforge.net/doc/html
-#
-# lrparsing (and presumably this snippet) was written by Russel Stuart
-#
-# I'll be messing with it to figure out how it all works
-
 import lrparsing
-from lrparsing import Keyword, List, Prio, Ref, THIS, Token, Tokens
+from lrparsing import List, Ref, Token
 
 class ExprParser(lrparsing.Grammar):
 
