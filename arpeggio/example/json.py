@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 
-##############################################################################
-# Name: json.py
-# Purpose: Implementation of a simple JSON parser in arpeggio.
-# Author: Igor R. Dejanovic <igor DOT dejanovic AT gmail DOT com>
-# Copyright: (c) 2009-2014 Igor R. Dejanovic <igor DOT dejanovic AT gmail DOT com>
-# License: MIT License
-#
-# This example is based on jsonParser.py from the pyparsing project
-# (see http://pyparsing.wikispaces.com/).
-##############################################################################
-
 from __future__ import unicode_literals
 
 import os
@@ -31,22 +20,21 @@ def jsonObject():       return "{", Optional(jsonMembers), "}"
 def jsonFile():         return jsonObject, EOF
 
 
+class JsonFileVisitor(PTNodeVisitor):
+
+    def visit_memberDef(self, node, children):
+        if len(children) == 2:
+            print("%s = %s" % (children[0], children[1]))
+
 def main(debug=False):
-    # Creating parser from parser model.
     parser = ParserPython(jsonFile, debug=debug)
 
-    # Load test JSON file
     current_dir = os.path.dirname(__file__)
     testdata = open(os.path.join(current_dir, 'test.json')).read()
 
-    # Parse json string
     parse_tree = parser.parse(testdata)
 
-    # parse_tree can now be analysed and transformed to some other form
-    # using e.g. visitor support. See http://igordejanovic.net/Arpeggio/semantics/
+    result = visit_parse_tree(parse_tree, JsonFileVisitor(debug=debug))
 
 if __name__ == "__main__":
-    # In debug mode dot (graphviz) files for parser model
-    # and parse tree will be created for visualization.
-    # Checkout current folder for .dot files.
-    main(debug=True)
+    main()
