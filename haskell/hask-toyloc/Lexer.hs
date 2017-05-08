@@ -2,24 +2,25 @@ module Lexer where
 
 import Text.Parsec
 import Text.Parsec.String (Parser)
-import Text.Parsec.Language (emptyDef)
+import Text.Parsec.Language
 import qualified Text.Parsec.Token as T
-import qualified Text.ParserCombinators.Parsec as C
 
 lexer :: T.TokenParser ()
 lexer = T.makeTokenParser style
   where
-    -- the reserved operators
-    ops = [".",";"]
-    -- the reserved keywords
-    names = []
-    -- set the language
-    style = emptyDef {
-              T.commentLine = "#"
-            , T.reservedOpNames = ops
-            , T.reservedNames = names
-            -- TODO make strings be double quote only
-            }
+  style = emptyDef {
+            T.commentLine     = "#"
+          , T.commentStart    = ""
+          , T.commentEnd      = ""
+          , T.nestedComments  = False
+          , T.identStart      = letter <|> char '_'
+          , T.identLetter     = alphaNum <|> oneOf "_'"
+          , T.opStart         = T.opLetter emptyDef
+          , T.opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
+          , T.reservedOpNames = ["."]
+          , T.reservedNames   = []
+          , T.caseSensitive   = True
+          }
 
 -- Below we build all the base combinators
 
@@ -31,9 +32,9 @@ float' = T.float lexer
 
 string' :: Parser String
 string' = do
-  C.char '"'
-  s <- C.many ((C.char '\\' >> C.char '"' ) <|> C.noneOf "\"")
-  C.char '"'
+  char '"'
+  s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
+  char '"'
   return s
 
 identifier' :: Parser String

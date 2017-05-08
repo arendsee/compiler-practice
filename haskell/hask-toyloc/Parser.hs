@@ -28,7 +28,7 @@ parseToplevel s = parse (contents toplevel) "<stdin>" s
   toplevel :: Parser [Expr]
   toplevel = many $ do
     def <- expr
-    reservedOp' ";"
+    {- reservedOp' "\n" -}
     return def
 
 -- this is needed to parse individual Expr, but it doesn't seem to be called by
@@ -90,7 +90,7 @@ node = identifier' >>= return . Node
 apply :: Parser Expr
 apply = do
   name <- node
-  args <- many composon
+  args <- many1 composon
   return $ Apply name args
   where
   composon =

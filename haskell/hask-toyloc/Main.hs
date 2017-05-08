@@ -23,7 +23,7 @@ main = runInputT defaultSettings loop
     -- Nothing implying a Ctrl-D, end of file
     minput <- getInputLine "toyloc> "
     case minput of
-      Nothing -> outputStrLn "You must have pressed Ctrl-D, goodbye"
+      Nothing -> outputStrLn "goodbye"
       -- process input - parse the input line
       -- liftIO - do it in the IO monad
       -- `>>` - jump to the next loop, discarding current value
