@@ -1,4 +1,4 @@
-main = foo 1 . bar 4.5 . h . g . f "with a herring"
+foo 1 . bar 4.5 . h . g . f "with a herring"
 
 # # expected output
 # foo 1 Int    1
