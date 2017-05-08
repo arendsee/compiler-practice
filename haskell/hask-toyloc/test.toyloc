@@ -1,0 +1,10 @@
+main = foo 1 . bar 4.5 . h . g . f "with a herring"
+
+# # expected output
+# foo 1 Int    1
+# foo 2 Node   bar
+# bar 1 Float  4.5
+# bar 2 Node   h
+# h   1 Node   g
+# g   1 Node   f
+# f   1 String "with a herring"
