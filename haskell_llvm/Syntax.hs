@@ -2,6 +2,7 @@ module Syntax where
 
 type Name = String
 
+-- why do they have to derive Eq and Ord?
 data Expr
   = Float Double
   | BinOp Op Expr Expr
