@@ -1,12 +1,10 @@
 # Compiler practice
 
-I am currently working on writing two compilers. Untangling their problems is
-a real bitch. So I am making this repo as a sandbox for experimenting with
-model problems.
+This is a repo for practicing writing compilers. It is a place for learning the
+draft, not for novel research. Mostly everything in here will be toys or pieces
+of larger projects.
 
-When I get stuck in my main project, I will try to replicate the problem in
-a toy compiler. If I can solve the problem in this simplified context, then
-I can port the solution to the main project.
-
-I will mostly be using Flex and Bison, but I may this repository isn't limited
-to them.
+The folders contained each represent an approach to compiler design (or some
+part of it). The two main approaches I explore are the flex-bison and
+haskell-parsec combinations. The others, `arpeggio` and `lrparsing` are python
+modules for parsing gramars; I explore neither in any detail.
