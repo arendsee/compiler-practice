@@ -6,4 +6,7 @@ tok.log
 tags
 vgcore.*
 
+*.hi
+*.o
+
 __pycache__
