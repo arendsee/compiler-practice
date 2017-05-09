@@ -31,6 +31,7 @@ syn match number '\h\@<!-\?\(\d*\.\d\+\|\d\+\)\h\@!'
 " reserved operators
 syn match operator /\./
 syn match operator /=/
+syn match operator /[()]/
 
 " reserved keywords
 syn keyword keywords path 

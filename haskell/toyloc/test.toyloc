@@ -1,6 +1,4 @@
 foo 1 . bar 4.5 . h . g . f "with a herring"
-
-# # expected output
 # foo 1 Int    1
 # foo 2 Node   bar
 # bar 1 Float  4.5
@@ -8,3 +6,10 @@ foo 1 . bar 4.5 . h . g . f "with a herring"
 # h   1 Node   g
 # g   1 Node   f
 # f   1 String "with a herring"
+
+foo . ((a . b) 1 (c (d 1))) . bar
+# equivalently: `foo . a . b 1 (c (d 1)) . bar`
+
+zanzibar = foo 1 . bar 4.5
+zabzibar . h . g . f "with a herring"
+# yields exactly the same output as above
