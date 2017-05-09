@@ -11,5 +11,47 @@ foo . ((a . b) 1 (c (d 1))) . bar
 # equivalently: `foo . a . b 1 (c (d 1)) . bar`
 
 zanzibar = foo 1 . bar 4.5
-zabzibar . h . g . f "with a herring"
+zanzibar . h . g . f "with a herring"
 # yields exactly the same output as above
+
+# now if you make this parameterized, you can gain finer control
+# over linkage:
+fluflu x y = foo x . bar y
+fluflu 1 4.5 . h . g . f "with a herring"
+
+# these functions can be used in higher order constructions
+
+fly x = fee . phi . pho . fum x
+sum . map fly data
+
+# this can be used for all your control statements
+foo . if cond bar baz . x
+
+# which is more evident with cases like this:
+defroculate x = foo x . h x . g
+defroculate . 5
+
+# maybe I should add in anonymous functions, e.g.
+foo . {x| bar x . h x . g } baz . bif
+
+# or more naturally, perhaps this:
+foo . {x| bar x . h x . g } . baz . bif
+
+# a more practical example:
+
+{x| hist . fst x ; hist . scd x ; } . baz
+
+# Here I take input from baz, perhaps a table, and make histograms of the first
+# and second rows. Notice the ';' I threw in there, since I have given up
+# multiple composition, I need some comparable way to do multiple things. Maybe
+# simple separating them with semicolons will do. For example:
+
+foo ; bar ; baz ; . 5 # hate it
+
+# that's cool, but lets leave such experimental stuff for the official Morloc
+# repo and for now focus on getting the technical framework together.
+
+# More importantly, what is a program in Morloc? This all a little non-obvious,
+# partly because Morloc is a declarative language. Meh, that is no excuse.
+
+
