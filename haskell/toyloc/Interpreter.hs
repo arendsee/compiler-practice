@@ -1,23 +1,36 @@
-{- module Interpreter where -}
+module Interpreter where
 
--- TODO
--- link the tree here to the expressions in syntax
--- incorporate this printing into Main
--- write a DOT function that can be used in place of `topLil`
-
-import Data.List
+import qualified Data.List     as DL
 import qualified Data.Foldable as DF
 import qualified Control.Monad as CM
 
+import qualified Syntax as S
+
+expr2tree :: S.Expr -> Tree
+-- simple nodes, curried or not
+expr2tree (S.BinOp S.Dot          (S.Node s)     e) = Node s [expr2tree e]
+expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) = Node s (map expr2tree es ++ [expr2tree e])
+-- -- expr2tree (S.BinOp S.Dot _ _) -- ERROR!!!
+
+-- curried nodes outside of compositions
+expr2tree (S.Apply (S.Node s) es) = Node s (map expr2tree es)
+-- -- expr2tree (S.Apply _ es) -- ERROR!!!
+
+-- singletons
+expr2tree (S.Node    x) = Node x []
+expr2tree (S.Float   x) = Leaf $ Float   x
+expr2tree (S.Integer x) = Leaf $ Integer x
+expr2tree (S.String  x) = Leaf $ String  x
+
 data Value
   = Integer Integer
-  | Float   Float
+  | Float   Double
   | String  String
   deriving(Show)
 
 data Tree 
-  = Node String [Tree]
-  | Leaf Value
+  = Leaf Value
+  | Node String [Tree]
   deriving(Show)
 
 popChild :: Tree -> Maybe Tree
@@ -53,18 +66,17 @@ topLil (Node n ts) = Just $ (join [n, pos, typ, nam])
   typ = typeStr top
   nam = treeVal top
   join :: [String] -> String
-  join = foldr (++) "" . intersperse "\t"
+  join = foldr (++) "" . DL.intersperse "\t"
 
+-- DF.concat :: t [a] -> [a]
+-- CM.liftM :: (a -> r) -> m a -> m r
+-- g :: Tree -> [String]
+-- return :: a -> m a
+-- (>>=) :: m a -> (a -> m b) -> m b
 showTree :: (Tree -> Maybe String) -> Tree -> [String]
 showTree f t =
      (DF.toList . f) t
   ++ (DF.concat . g) (return t >>= popChild)
   ++ (DF.concat . g) (return t >>= topChild)
   where
-    g = CM.LiftM . showTree f
-
-
-main :: IO ()
-main = do
-  let t1 = Node "foo" [Node "bar" [Leaf $ Integer 1, Leaf $ Float 1.2], Leaf (String "yolo")]
-  putStr $ unlines $ sort $ showTree topLil t1
+    g = CM.liftM (showTree f)

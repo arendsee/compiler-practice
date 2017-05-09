@@ -1,6 +1,9 @@
 module Main where
 
+import qualified Data.List as DL
+
 import Parser
+import Interpreter
 import Control.Monad.Trans
 import System.Console.Haskeline
 
@@ -13,7 +16,12 @@ process line = do
   case res of
     Left err -> print err
     -- mapM_ maps within a monad for side effects, returning nothing
-    Right ex -> mapM_ print ex
+    Right ex -> mapM_ writeLil ex
+    where
+    writeLil =
+      putStr . unlines . DL.sort . showTree topLil . expr2tree
+
+  
 
 main :: IO ()
 main = runInputT defaultSettings loop

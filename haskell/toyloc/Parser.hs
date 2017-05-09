@@ -9,13 +9,6 @@ import qualified Text.Parsec.Token as T
 import Lexer
 import Syntax
 
-{- integer'    -}
-{- float'      -}
-{- string'     -}
-{- identifier' -}
-{- reserved'   -}
-{- reservedOp' -}
-
 -- parses the entire given program, returns a list of expressions on success,
 -- or a error statement on failure.
 -- * I assume "<stdin>" means we are reading from STDIN. But what exactly is it
@@ -68,7 +61,7 @@ expr = E.buildExpressionParser table factor
     <|> node
   -- binary operators, listed in order of precedence
   table =
-    [[binary "." Compose E.AssocRight]]
+    [[binary "." Dot E.AssocRight]]
     where
     -- s     string e.g. "*"
     -- f     symbol e.g. Times
@@ -79,7 +72,7 @@ num :: Parser Expr
 num = float' >>= return . Float 
 
 int :: Parser Expr
-int = integer' >>= return . Integer 
+int = integer' >>= return . Integer
 
 str :: Parser Expr
 str = string' >>= return . String
@@ -96,5 +89,6 @@ apply = do
   composon =
         try node
     <|> try str
-    <|> try int
-    <|> num 
+    -- num before int, else "." is parsed as COMPOSE
+    <|> try num
+    <|>     int

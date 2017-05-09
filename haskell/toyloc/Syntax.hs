@@ -13,5 +13,5 @@ data Expr
   deriving (Eq, Ord, Show)
 
 data Op
-  = Compose  -- "."
+  = Dot  -- "."
   deriving (Eq, Ord, Show)
