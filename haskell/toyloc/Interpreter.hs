@@ -1,12 +1,13 @@
 {- module Interpreter where -}
 
 -- TODO
--- fix the TODO's below
 -- link the tree here to the expressions in syntax
 -- incorporate this printing into Main
 -- write a DOT function that can be used in place of `topLil`
 
 import Data.List
+import qualified Data.Foldable as DF
+import qualified Control.Monad as CM
 
 data Value
   = Integer Integer
@@ -54,23 +55,16 @@ topLil (Node n ts) = Just $ (join [n, pos, typ, nam])
   join :: [String] -> String
   join = foldr (++) "" . intersperse "\t"
 
--- But this overuse of case is a bad smell, there is some monad magic that can
--- be applied here ...
-showTree :: Tree -> (Tree -> Maybe String) -> [String]
-showTree (Leaf _) _ = []
-showTree (Node _ []) _ = []
-showTree t f =
-  case f t of
-    Nothing  -> []
-    (Just s) -> [s]
-  ++ case popChild t of
-    Nothing   -> []
-    (Just tt) -> showTree tt f
-  ++ case topChild t of
-    Nothing   -> []
-    (Just tt) -> showTree tt f
+showTree :: (Tree -> Maybe String) -> Tree -> [String]
+showTree f t =
+     (DF.toList . f) t
+  ++ (DF.concat . g) (return t >>= popChild)
+  ++ (DF.concat . g) (return t >>= topChild)
+  where
+    g = CM.LiftM . showTree f
+
 
 main :: IO ()
 main = do
-  let t1 = Node "foo" [Node "bar" [Leaf $ Integer 1, Leaf $ Float 1.2], Leaf (String "yolo")]  
-  putStr $ unlines $ sort $ showTree t1 topLil
+  let t1 = Node "foo" [Node "bar" [Leaf $ Integer 1, Leaf $ Float 1.2], Leaf (String "yolo")]
+  putStr $ unlines $ sort $ showTree topLil t1
