@@ -16,10 +16,12 @@ process line = do
   case res of
     Left err -> print err
     -- mapM_ maps within a monad for side effects, returning nothing
-    Right ex -> mapM_ writeLil ex
+    Right ex -> case mapM expr2tree ex of
+      Left  err  -> print err
+      Right tree -> mapM_ writeLil tree
     where
     writeLil =
-      putStr . unlines . DL.sort . showTree topLil . expr2tree
+      putStr . unlines . DL.sort . showTree topLil
 
   
 

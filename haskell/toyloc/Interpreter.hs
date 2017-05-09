@@ -6,21 +6,33 @@ import qualified Control.Monad as CM
 
 import qualified Syntax as S
 
-expr2tree :: S.Expr -> Tree
--- simple nodes, curried or not
-expr2tree (S.BinOp S.Dot          (S.Node s)     e) = Node s [expr2tree e]
-expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) = Node s (map expr2tree es ++ [expr2tree e])
--- -- expr2tree (S.BinOp S.Dot _ _) -- ERROR!!!
-
+expr2tree :: S.Expr -> Either String Tree
 -- curried nodes outside of compositions
-expr2tree (S.Apply (S.Node s) es) = Node s (map expr2tree es)
--- -- expr2tree (S.Apply _ es) -- ERROR!!!
+expr2tree (S.Apply (S.Node s) es) =
+  case CM.mapM expr2tree es of
+    Left  err -> Left  $ "Badly formed input to '" ++ s ++ "': "
+    Right xs  -> Right $ Node s xs
+expr2tree (S.Apply _ _) = Left "Primitives cannot take arguments"
+
+-- simple nodes, curried or not, in compositions
+expr2tree (S.BinOp S.Dot (S.Node s) e) =
+  case expr2tree e of
+    Left  err -> Left  $ "Badly formed input to '" ++ s ++ "': " ++ err
+    Right x   -> Right $ Node s [x]
+
+expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) =
+  case (CM.mapM expr2tree es, expr2tree e) of
+    (Left err, _) -> Left $ "Badly formed arguments to '" ++ s ++ "': " ++ err
+    (_, Left err) -> Left $ "Badly formed composition argument to '" ++ s ++ "': " ++ err 
+    (Right xs, Right x) -> Right $ Node s (xs ++ [x]) 
+
+expr2tree (S.BinOp S.Dot _ _) = Left "Primitives cannot be on the left side of a composition"
 
 -- singletons
-expr2tree (S.Node    x) = Node x []
-expr2tree (S.Float   x) = Leaf $ Float   x
-expr2tree (S.Integer x) = Leaf $ Integer x
-expr2tree (S.String  x) = Leaf $ String  x
+expr2tree (S.Node    x) = Right $ Node x []
+expr2tree (S.Float   x) = Right $ Leaf $ Float   x
+expr2tree (S.Integer x) = Right $ Leaf $ Integer x
+expr2tree (S.String  x) = Right $ Leaf $ String  x
 
 data Value
   = Integer Integer
