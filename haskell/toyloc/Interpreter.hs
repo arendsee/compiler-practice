@@ -19,11 +19,10 @@ data Tree
   | Leaf Value
   deriving(Show)
 
--- TODO change to `Tree -> Maybe Tree`
-popChild :: Tree -> Tree
-popChild (Leaf v)    = Leaf v
-popChild (Node n []) = Node n []
-popChild (Node n ts) = Node n (init ts)
+popChild :: Tree -> Maybe Tree
+popChild (Leaf v)    = Nothing
+popChild (Node n []) = Nothing
+popChild (Node n ts) = Just $ Node n (init ts)
 
 typeStr :: Tree -> String
 typeStr (Leaf (Integer x)) = "Integer"
@@ -31,25 +30,22 @@ typeStr (Leaf (Float   x)) = "Float"
 typeStr (Leaf (String  x)) = "String"
 typeStr (Node _ _)         = "Node"
 
--- TODO use Maybe
 treeVal :: Tree -> String
 treeVal (Leaf (Integer x)) = show x
 treeVal (Leaf (Float   x)) = show x
 treeVal (Leaf (String  x)) = show x
 treeVal (Node x _) = x
 
--- TODO change to `Tree -> Maybe Tree`
-topChild :: Tree -> Tree
-topChild (Leaf v)    = Leaf v
-topChild (Node n []) = Node n []
-topChild (Node n ts) = head $ reverse ts
+topChild :: Tree -> Maybe Tree
+topChild (Leaf v)    = Nothing
+topChild (Node n []) = Nothing
+topChild (Node n ts) = Just $ head $ reverse ts
 
 -- connect the parent to the top child 
--- TODO change to `Tree -> Maybe String`
-topLil :: Tree -> String
-topLil (Leaf _) = ""
-topLil (Node n []) = ""
-topLil (Node n ts) = join [n, pos, typ, nam]
+topLil :: Tree -> Maybe String
+topLil (Leaf _) = Nothing
+topLil (Node n []) = Nothing
+topLil (Node n ts) = Just $ (join [n, pos, typ, nam])
   where
   top = head $ reverse ts
   pos = show $ length ts
@@ -58,12 +54,21 @@ topLil (Node n ts) = join [n, pos, typ, nam]
   join :: [String] -> String
   join = foldr (++) "" . intersperse "\t"
 
--- TODO - monadize this bitch 
-showTree :: Tree -> (Tree -> String) -> [String]
+-- But this overuse of case is a bad smell, there is some monad magic that can
+-- be applied here ...
+showTree :: Tree -> (Tree -> Maybe String) -> [String]
 showTree (Leaf _) _ = []
 showTree (Node _ []) _ = []
-showTree t f = [f t] ++ showTree (popChild t) f ++ showTree (topChild t) f
-
+showTree t f =
+  case f t of
+    Nothing  -> []
+    (Just s) -> [s]
+  ++ case popChild t of
+    Nothing   -> []
+    (Just tt) -> showTree tt f
+  ++ case topChild t of
+    Nothing   -> []
+    (Just tt) -> showTree tt f
 
 main :: IO ()
 main = do
