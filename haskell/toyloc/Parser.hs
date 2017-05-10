@@ -5,29 +5,36 @@ import Text.Parsec.String (Parser)
 
 import qualified Text.Parsec.Expr as E
 import qualified Text.Parsec.Token as T
+import qualified Control.Monad.Except as CE
 
 import Lexer
 import Syntax
+import EvalError
 
 -- parses the entire given program, returns a list of expressions on success,
 -- or a error statement on failure.
 -- * I assume "<stdin>" means we are reading from STDIN. But what exactly is it
 --   that we are reading from STDIN? I suppose this could also be a file name?
 -- * I don't know what `s` means here
-parseToplevel :: String -> Either ParseError [Expr]
-parseToplevel s = parse (contents toplevel) "<stdin>" s
+parseToplevel :: String -> ThrowsError [Expr]
+parseToplevel s =
+  case parse (contents toplevel) "<stdin>" s of
+    Left err  -> CE.throwError $ SyntaxError err
+    Right val -> return val
   where
   -- parse a list of semi-colon delimited expressions
   toplevel :: Parser [Expr]
   toplevel = many $ do
     def <- expr
-    {- reservedOp' "\n" -}
     return def
 
 -- this is needed to parse individual Expr, but it doesn't seem to be called by
 -- name anywhere. I don't know how it is connected to everything else.
-parseExpr :: String -> Either ParseError Expr
-parseExpr s = parse (contents expr) "<stdin>" s
+parseExpr :: String -> ThrowsError Expr
+parseExpr s =
+  case parse (contents expr) "<stdin>" s of
+    Left err  -> CE.throwError $ SyntaxError err
+    Right val -> return val
 
 
 -- conents is passed a parser (e.g. toplevel, as above), removes leading

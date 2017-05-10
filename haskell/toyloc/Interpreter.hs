@@ -3,36 +3,78 @@ module Interpreter where
 import qualified Data.List     as DL
 import qualified Data.Foldable as DF
 import qualified Control.Monad as CM
+import qualified Control.Monad.Except as CE
 
 import qualified Syntax as S
+import qualified EvalError as E
 
-expr2tree :: S.Expr -> Either String Tree
+expr2tree :: S.Expr -> E.ThrowsError Tree
+{-
+     [MorlocError a], if any element in the list is a failure, return a failure
+     otherwise, extract the pure list, e.g. [MorlocError a] -> [a]
+     The [a] is fed as input to the Node constructor
+
+  let
+    a := Expr
+    b := Tree
+    l := list monad
+    e := error monad
+
+  Overall:
+      (0)    l a -> e b
+
+  Simple components:
+      (1)    l b -> b
+      (2)    a -> e a
+
+  (1) is the constructor Node (builds a node from inputs). I'll ignore the
+      String argument (it can just be partially applied away)
+  (2) is a expr2tree itself
+
+  Derived:
+      (3)    l a -> l (e b)
+      (4)    l (e b) -> e (l b)
+      (5)    e (l b) -> e b
+
+  (3) is expr2tree lifted into l
+  (4) matches the general case (Data.Traversable):
+        sequenceA :: (Traversable t, Applicative f) => t (f a) -> f (t a)
+      It also matches the more specific function from Control.Monad:
+        sequence :: Monad m => [m a] -> m [a]
+  (5) is just (1) lifted into e
+
+  Putting all this together:
+       (5) . (4) . (3) :: (0)
+  filling in the functions we get:
+  (liftM Node) . sequence . (liftM expr2tree)
+-}
+
 -- curried nodes outside of compositions
 expr2tree (S.Apply (S.Node s) es) =
-  case CM.mapM expr2tree es of
-    Left  err -> Left  $ "Badly formed input to '" ++ s ++ "': "
-    Right xs  -> Right $ Node s xs
-expr2tree (S.Apply _ _) = Left "Primitives cannot take arguments"
+  CM.liftM (Node s) $ CM.sequence $ CM.liftM expr2tree $ es
 
--- simple nodes, curried or not, in compositions
+-- simple nodes, composition without application
 expr2tree (S.BinOp S.Dot (S.Node s) e) =
-  case expr2tree e of
-    Left  err -> Left  $ "Badly formed input to '" ++ s ++ "': " ++ err
-    Right x   -> Right $ Node s [x]
+  CM.liftM (Node s) $ CM.sequence $ [expr2tree e]
 
+-- simple nodes, composition with application
 expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) =
-  case (CM.mapM expr2tree es, expr2tree e) of
-    (Left err, _) -> Left $ "Badly formed arguments to '" ++ s ++ "': " ++ err
-    (_, Left err) -> Left $ "Badly formed composition argument to '" ++ s ++ "': " ++ err 
-    (Right xs, Right x) -> Right $ Node s (xs ++ [x]) 
-
-expr2tree (S.BinOp S.Dot _ _) = Left "Primitives cannot be on the left side of a composition"
+  CM.liftM (Node s) $ CM.sequence $ CM.liftM expr2tree $ es ++ [e]
 
 -- singletons
-expr2tree (S.Node    x) = Right $ Node x []
-expr2tree (S.Float   x) = Right $ Leaf $ Float   x
-expr2tree (S.Integer x) = Right $ Leaf $ Integer x
-expr2tree (S.String  x) = Right $ Leaf $ String  x
+expr2tree (S.Node    x) = return $ Node x []
+expr2tree (S.Float   x) = return $ Leaf $ Float   x
+expr2tree (S.Integer x) = return $ Leaf $ Integer x
+expr2tree (S.String  x) = return $ Leaf $ String  x
+
+-- throw error on all kinds of compositions not handled above
+expr2tree (S.BinOp S.Dot _ _) = CE.throwError $ E.BadComposition msg where
+  msg = "Primitives cannot be on the left side of a composition"
+
+-- throw error on all kinds of applicaitons not handled above
+expr2tree (S.Apply _ _) = CE.throwError $ E.BadApplication msg where
+  msg = "Primitives cannot take arguments"
+
 
 data Value
   = Integer Integer
