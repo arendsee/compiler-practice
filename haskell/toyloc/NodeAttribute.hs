@@ -7,7 +7,7 @@ module NodeAttribute
   , nodeAttrS
 ) where
 
-type ID = Integer
+type ID = Int
 
 data Value
   = Integer  Integer

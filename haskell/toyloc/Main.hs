@@ -3,7 +3,7 @@ module Main where
 import qualified Data.List as DL
 
 import Parser
-import Interpreter
+import Interpreter as I
 import Graph
 
 import Control.Monad.Trans
@@ -18,9 +18,10 @@ process line = do
   case res of
     Left err -> print err
     -- mapM_ maps within a monad for side effects, returning nothing
-    Right ex -> case mapM expr2tree ex of
+    Right ex -> case mapM I.eval ex of
       Left  err  -> print err
-      Right tree -> mapM_ (putStr . toLIL) tree
+      Right tree -> mapM_ (putStr . I.toLIL) tree
+      {- Right tree -> print tree -}
 
 main :: IO ()
 main = runInputT defaultSettings loop
