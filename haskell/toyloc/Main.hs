@@ -4,6 +4,8 @@ import qualified Data.List as DL
 
 import Parser
 import Interpreter
+import Graph
+
 import Control.Monad.Trans
 import System.Console.Haskeline
 
@@ -18,12 +20,7 @@ process line = do
     -- mapM_ maps within a monad for side effects, returning nothing
     Right ex -> case mapM expr2tree ex of
       Left  err  -> print err
-      Right tree -> mapM_ writeLil tree
-    where
-    writeLil =
-      putStr . unlines . DL.sort . showTree topLil
-
-  
+      Right tree -> mapM_ (putStr . toLIL) tree
 
 main :: IO ()
 main = runInputT defaultSettings loop

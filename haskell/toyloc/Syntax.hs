@@ -2,7 +2,6 @@ module Syntax where
 
 type Node = String
 
--- why do they have to derive Eq and Ord?
 data Expr
   = Float   Double
   | Integer Integer

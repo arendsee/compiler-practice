@@ -1,22 +1,73 @@
 module Interpreter where
 
-import qualified Data.List     as DL
+import qualified Data.List as DL
 import qualified Data.Foldable as DF
 import qualified Control.Monad as CM
 import qualified Control.Monad.Except as CE
 
 import qualified Syntax as S
 import qualified EvalError as E
+import Graph
+import NodeAttribute
 
-expr2tree :: S.Expr -> E.ThrowsError Tree
-{-
+-- see Note
+expr2tree :: S.Expr -> E.ThrowsError (Graph NodeAttr)
+-- curried nodes outside of compositions
+expr2tree (S.Apply (S.Node s) es) =
+  CM.liftM (Node $ nodeAttrS s) $ CM.sequence $ CM.liftM expr2tree $ es where
+
+-- simple nodes, composition without application
+expr2tree (S.BinOp S.Dot (S.Node s) e) =
+  CM.liftM (Node $ nodeAttrS s) $ CM.sequence $ [expr2tree e]
+
+-- simple nodes, composition with application
+expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) =
+  CM.liftM (Node $ nodeAttrS s) $ CM.sequence $ CM.liftM expr2tree $ es ++ [e]
+
+-- singletons
+expr2tree (S.Node    x) = return $ Node (nodeAttrS x) []
+expr2tree (S.Float   x) = return $ Leaf $ Primitive $ Float   x
+expr2tree (S.Integer x) = return $ Leaf $ Primitive $ Integer x
+expr2tree (S.String  x) = return $ Leaf $ Primitive $ String  x
+
+-- throw error on all kinds of compositions not handled above
+expr2tree (S.BinOp S.Dot _ _) = CE.throwError $ E.BadComposition msg where
+  msg = "Primitives cannot be on the left side of a composition"
+
+-- throw error on all kinds of applicaitons not handled above
+expr2tree (S.Apply _ _) = CE.throwError $ E.BadApplication msg where
+  msg = "Primitives cannot take arguments"
+
+-- connect the parent to the top child 
+-- this function will be used by Graph.familyMap
+topLIL :: NodeAttr -> (Int, NodeAttr) -> String
+topLIL (Primitive x) _ = ""
+topLIL p (i, c) = join [pval', pid', pos', typ', nam']
+    where
+    pval' = case node_value p of
+      Just x -> x
+      Nothing -> "UNDEFINED" -- TODO: this should throw an error
+    pid' = case node_id p of
+      Just i -> show i
+      Nothing -> "UNDEFINED" -- TODO: this should throw an error
+    pos' = show i
+    typ' = typeStr c
+    nam' = valStr c
+    join :: [String] -> String
+    join = foldr (++) "" . DL.intersperse "\t"
+
+toLIL :: Graph NodeAttr -> String 
+toLIL g = unlines $ foldr1 (++) $ parentChildMapI topLIL g
+
+{- Note
+
      [MorlocError a], if any element in the list is a failure, return a failure
      otherwise, extract the pure list, e.g. [MorlocError a] -> [a]
      The [a] is fed as input to the Node constructor
 
   let
     a := Expr
-    b := Tree
+    b := Graph
     l := list monad
     e := error monad
 
@@ -48,89 +99,3 @@ expr2tree :: S.Expr -> E.ThrowsError Tree
   filling in the functions we get:
   (liftM Node) . sequence . (liftM expr2tree)
 -}
-
--- curried nodes outside of compositions
-expr2tree (S.Apply (S.Node s) es) =
-  CM.liftM (Node s) $ CM.sequence $ CM.liftM expr2tree $ es
-
--- simple nodes, composition without application
-expr2tree (S.BinOp S.Dot (S.Node s) e) =
-  CM.liftM (Node s) $ CM.sequence $ [expr2tree e]
-
--- simple nodes, composition with application
-expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) =
-  CM.liftM (Node s) $ CM.sequence $ CM.liftM expr2tree $ es ++ [e]
-
--- singletons
-expr2tree (S.Node    x) = return $ Node x []
-expr2tree (S.Float   x) = return $ Leaf $ Float   x
-expr2tree (S.Integer x) = return $ Leaf $ Integer x
-expr2tree (S.String  x) = return $ Leaf $ String  x
-
--- throw error on all kinds of compositions not handled above
-expr2tree (S.BinOp S.Dot _ _) = CE.throwError $ E.BadComposition msg where
-  msg = "Primitives cannot be on the left side of a composition"
-
--- throw error on all kinds of applicaitons not handled above
-expr2tree (S.Apply _ _) = CE.throwError $ E.BadApplication msg where
-  msg = "Primitives cannot take arguments"
-
-
-data Value
-  = Integer Integer
-  | Float   Double
-  | String  String
-  deriving(Show)
-
-data Tree 
-  = Leaf Value
-  | Node String [Tree]
-  deriving(Show)
-
-popChild :: Tree -> Maybe Tree
-popChild (Leaf v)    = Nothing
-popChild (Node n []) = Nothing
-popChild (Node n ts) = Just $ Node n (init ts)
-
-typeStr :: Tree -> String
-typeStr (Leaf (Integer x)) = "Integer"
-typeStr (Leaf (Float   x)) = "Float"
-typeStr (Leaf (String  x)) = "String"
-typeStr (Node _ _)         = "Node"
-
-treeVal :: Tree -> String
-treeVal (Leaf (Integer x)) = show x
-treeVal (Leaf (Float   x)) = show x
-treeVal (Leaf (String  x)) = show x
-treeVal (Node x _) = x
-
-topChild :: Tree -> Maybe Tree
-topChild (Leaf v)    = Nothing
-topChild (Node n []) = Nothing
-topChild (Node n ts) = Just $ head $ reverse ts
-
--- connect the parent to the top child 
-topLil :: Tree -> Maybe String
-topLil (Leaf _) = Nothing
-topLil (Node n []) = Nothing
-topLil (Node n ts) = Just $ (join [n, pos, typ, nam])
-  where
-  top = head $ reverse ts
-  pos = show $ length ts
-  typ = typeStr top
-  nam = treeVal top
-  join :: [String] -> String
-  join = foldr (++) "" . DL.intersperse "\t"
-
--- DF.concat :: t [a] -> [a]
--- CM.liftM :: (a -> r) -> m a -> m r
--- g :: Tree -> [String]
--- return :: a -> m a
--- (>>=) :: m a -> (a -> m b) -> m b
-showTree :: (Tree -> Maybe String) -> Tree -> [String]
-showTree f t =
-     (DF.toList . f) t
-  ++ (DF.concat . g) (return t >>= popChild)
-  ++ (DF.concat . g) (return t >>= topChild)
-  where
-    g = CM.liftM (showTree f)
