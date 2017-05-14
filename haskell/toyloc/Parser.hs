@@ -61,11 +61,11 @@ expr = E.buildExpressionParser table factor
   -- all expressions that evaluate to a legal element in an expression
   factor :: Parser Expr
   factor =
-        try num
+        try apply
+    <|> try node
+    <|> try num
     <|> try int
-    <|> try str
-    <|> try apply
-    <|> node
+    <|>     str
   -- binary operators, listed in order of precedence
   table =
     [[binary "." Dot E.AssocRight]]
@@ -89,7 +89,8 @@ node = identifier' >>= return . Node
 
 apply :: Parser Expr
 apply = do
-  name <- node
+  name <- composon -- NOTE: I'll allow anything to compose here,
+                   -- I'll catch the errors in the evaluator 
   args <- many1 composon
   return $ Apply name args
   where

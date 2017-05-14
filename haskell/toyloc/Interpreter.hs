@@ -91,6 +91,7 @@ expr2tree (S.Apply _ _) = CE.throwError $ E.BadApplication msg where
   msg = "Primitives cannot take arguments"
 
 
+
 toLIL :: Graph NodeAttr -> String 
 toLIL g = unlines $ foldr1 (++) $ parentChildMapI topLIL g where
   -- connect the parent to the top child 
