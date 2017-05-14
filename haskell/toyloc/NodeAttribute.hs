@@ -1,54 +1,25 @@
 module NodeAttribute
 (
     NodeAttr(..)
-  , Value(..)
-  , typeStr
-  , valStr
   , nodeAttrS
 ) where
 
-type ID = Int
-
-data Value
-  = Integer  Integer
-  | Float    Double
-  | String   String
-  deriving(Show,Eq,Ord)
-
-data NodeAttr
-  = Primitive Value 
-  | Function {
-        node_id    :: Maybe ID
-      , node_value :: Maybe String
-      , node_type  :: Maybe String
-    }
+data NodeAttr =
+  NodeAttr {
+      node_id    :: Maybe Int
+    , node_value :: Maybe String
+    , node_type  :: Maybe String
+    , primitive  :: Bool
+  }
   deriving(Show,Eq,Ord)
 
 nodeAttrS :: String -> NodeAttr
-nodeAttrS s = Function {
+nodeAttrS s = NodeAttr {
     node_id    = Nothing
   , node_value = Just s
   , node_type  = Nothing
+  , primitive  = False
 }
-
-typeStr :: NodeAttr -> String
-typeStr (Primitive (Integer x)) = "Integer"
-typeStr (Primitive (Float   x)) = "Float"
-typeStr (Primitive (String  x)) = "String"
-typeStr func =
-  case node_type func of
-    (Just x) -> x
-    Nothing  -> ""
-
-valStr :: NodeAttr -> String
-valStr (Primitive (Integer x)) = show x
-valStr (Primitive (Float   x)) = show x
-valStr (Primitive (String  x)) = "\"" ++ x ++ "\""
-valStr func =
-  case node_value func of
-    (Just x) -> x
-    Nothing  -> ""
-
 
 {- main :: IO ()                                      -}
 {- main = do                                          -}

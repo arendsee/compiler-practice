@@ -79,10 +79,10 @@ expr2tree (S.BinOp S.Dot (S.Node s) e) =
 expr2tree (S.BinOp S.Dot (S.Apply (S.Node s) es) e) =
   CM.liftM (Node $ nodeAttrS s) $ CM.sequence $ CM.liftM expr2tree $ es ++ [e]
 -- singletons
-expr2tree (S.Node    x) = return $ Node (nodeAttrS x) []
-expr2tree (S.Float   x) = return $ Leaf $ Primitive $ Float   x
-expr2tree (S.Integer x) = return $ Leaf $ Primitive $ Integer x
-expr2tree (S.String  x) = return $ Leaf $ Primitive $ String  x
+expr2tree (S.Node    x) = return $ Leaf $ nodeAttrS x
+expr2tree (S.Float   x) = return $ Leaf $ (nodeAttrS $ show x) {node_type = Just "Float",   primitive = True}
+expr2tree (S.Integer x) = return $ Leaf $ (nodeAttrS $ show x) {node_type = Just "Integer", primitive = True}
+expr2tree (S.String  x) = return $ Leaf $ (nodeAttrS        x) {node_type = Just "String",  primitive = True}
 -- throw error on all kinds of compositions not handled above
 expr2tree (S.BinOp S.Dot _ _) = CE.throwError $ E.BadComposition msg where
   msg = "Primitives cannot be on the left side of a composition"
@@ -96,18 +96,21 @@ toLIL g = unlines $ foldr1 (++) $ parentChildMapI topLIL g where
   -- connect the parent to the top child 
   -- this function will be used by Graph.familyMap
   topLIL :: NodeAttr -> (Int, NodeAttr) -> String
-  topLIL (Primitive x) _ = ""
   topLIL p (i, c) = join [pval', pid', pos', typ', nam']
       where
       pval' = case node_value p of
         Just x -> x
-        Nothing -> "UNDEFINED" -- TODO: this should throw an error
+        Nothing -> "NO_VALUE" -- should throw error
       pid' = case node_id p of
         Just i -> show i
-        Nothing -> "UNDEFINED" -- TODO: this should throw an error
+        Nothing -> "NO_ID" -- should throw error
       pos' = show i
-      typ' = typeStr c
-      nam' = valStr c
+      typ' = case node_type c of
+        Just s -> s
+        Nothing -> "*"
+      nam' = case node_value c of
+        Just s -> s
+        Nothing -> "NO_VALUE" -- should throw error
       join :: [String] -> String
       join = foldr (++) "" . DL.intersperse "\t"
 
