@@ -1,4 +1,6 @@
-# toyloc
+# toyloc - DEPRECATED
+
+** This code has now been ported to [morloc](https://github.com/arendsee/morloc) **
 
 This is a toy implementation of Morloc. It is designed to test Haskell
 implementation of the Morloc backend. I do not know how much I will test here
