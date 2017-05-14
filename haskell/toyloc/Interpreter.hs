@@ -57,7 +57,8 @@ eval e = CM.liftM setid $ expr2tree e
 --   ==========================================================
 
 setid :: Graph NodeAttr -> Graph NodeAttr
-setid g = fmap fst $ propagate base (zipG g gcount) where
+setid g = fmap fst $ propagate base (zipG zeroed gcount) where
+  zeroed = fmap (\attr -> attr { node_id = Just 0 }) g
   -- base :: a -> [a] -> [a]
   base (x,i) gs' = zipWith set_child_id gs' child_ids where
     set_child_id (attr,k) j = (attr { node_id = Just j }, j)
