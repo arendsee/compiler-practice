@@ -55,7 +55,6 @@ eval e = CM.liftM setid $ expr2tree e
 --   ----------------------------------------------------------
 -- < s16 g := Graph Int
 --   ==========================================================
-
 setid :: Graph NodeAttr -> Graph NodeAttr
 setid g = fmap fst $ propagate base (zipG zeroed gcount) where
   zeroed = fmap (\attr -> attr { node_id = Just 0 }) g
@@ -89,7 +88,6 @@ expr2tree (S.BinOp S.Dot _ _) = CE.throwError $ E.BadComposition msg where
 -- throw error on all kinds of applicaitons not handled above
 expr2tree (S.Apply _ _) = CE.throwError $ E.BadApplication msg where
   msg = "Primitives cannot take arguments"
-
 
 
 toLIL :: Graph NodeAttr -> String 

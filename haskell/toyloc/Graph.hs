@@ -77,7 +77,7 @@ pullG f (Node x xs) = Node (foldr f x (values xs')) xs' where
 propagate :: (a -> [a] -> [a]) -> Graph a -> Graph a
 propagate _ (Leaf x) = Leaf x  
 propagate f (Node x xs) = Node x (map (propagate f) newkids) where
-  newkids = (CM.liftM2 replaceValue) (f x (values xs)) xs
+  newkids = zipWith replaceValue (f x (values xs)) xs
 
 replaceValue :: a -> Graph a -> Graph a 
 replaceValue x (Leaf _) = Leaf x
