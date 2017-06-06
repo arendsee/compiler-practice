@@ -1,0 +1,7 @@
+let zero = \s . \z . s z in
+(
+  let succ = \f . \s . \z . s (f s z) in
+  (
+    succ zero
+  )
+)
